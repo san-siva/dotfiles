@@ -93,7 +93,7 @@ install_ruby_deps() {
 		return 1
 	fi
 
-	gem install neovim
+	gem install --user-install neovim
 }
 
 enable_corepack() {
