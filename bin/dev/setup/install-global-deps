@@ -66,7 +66,7 @@ install_bash_formatter() {
 		return 1
 	fi
 
-	pip3 install beautysh pynvim yamlfix shandy-sqlfmt
+	pip3 install --user beautysh pynvim yamlfix shandy-sqlfmt
 }
 
 install_brew_packages() {
@@ -90,6 +90,17 @@ install_brew_packages() {
 install_ruby_deps() {
 	if ! [ -n "$(command -v gem)" ]; then
 		echo "gem not found, skipping ruby dependencies"
+		return 1
+	fi
+
+	# Check Ruby version (need >= 3.0 for neovim gem)
+	ruby_version=$(ruby -e 'puts RUBY_VERSION')
+	ruby_major=$(echo "$ruby_version" | cut -d. -f1)
+
+	if [ "$ruby_major" -lt 3 ]; then
+		echo "Ruby version $ruby_version is too old (need >= 3.0)"
+		echo "Homebrew Ruby should be installed, but you may need to restart your shell"
+		echo "After restarting, run this script again to install ruby dependencies"
 		return 1
 	fi
 

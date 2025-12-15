@@ -198,6 +198,12 @@ Generic configs suitable for React/Node.js projects:
   - Jest testing rules
   - Import sorting and organization
   - TypeScript strict rules
+- **`jest.config.js`** - Jest testing framework configuration
+
+### Java Development
+
+- **`eclipse-java-google-style.xml`** - Eclipse Java formatter with Google style guide
+- **`lombok.jar`** - Lombok library for Java annotation processing
 
 ### Code Formatting
 
