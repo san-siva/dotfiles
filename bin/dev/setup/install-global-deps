@@ -18,15 +18,28 @@ install_npm_global_deps() {
 	fi
 
 	if [ -n "$(command -v npm)" ]; then
-		# ESLINT
+		# ESLINT Core
 		npm install -g \
 			eslint \
 			jiti \
+			@eslint/js \
 			@eslint/eslintrc \
+			@eslint/compat \
+			eslint_d
+
+		# ESLINT Plugins
+		npm install -g \
 			eslint-plugin-react \
 			eslint-plugin-react-native \
-			eslint_d \
-			neovim
+			eslint-plugin-react-hooks \
+			eslint-plugin-jest \
+			eslint-plugin-import \
+			eslint-plugin-jsx-a11y \
+			eslint-plugin-no-await-in-promise \
+			eslint-plugin-redux-saga \
+			@jambit/eslint-plugin-typed-redux-saga \
+			eslint-plugin-simple-import-sort \
+			eslint-plugin-unicorn
 
 		# Markdown
 		npm install -g \
@@ -34,12 +47,12 @@ install_npm_global_deps() {
 
 		# Jest
 		npm install -g \
-			jest \
-			eslint-plugin-jest
+			jest
 
-		# Typescript
+		# TypeScript
 		npm install -g \
 			typescript \
+			typescript-eslint \
 			@typescript-eslint/eslint-plugin \
 			@typescript-eslint/parser
 
@@ -48,16 +61,52 @@ install_npm_global_deps() {
 			prettier \
 			eslint-config-prettier
 
-		# utils
+		# Utils
 		npm install -g \
 			local-ssl-proxy \
 			neovim
 
+		# Claude Code
 		npm install -g \
 			@anthropic-ai/claude-code
 	else
 		echo "npm still not available after installation attempt"
 	fi
+}
+
+install_eslint_configs() {
+	if ! [ -n "$(command -v npm)" ]; then
+		echo "npm not found, skipping eslint config installation"
+		return 1
+	fi
+
+	# Get npm global prefix
+	NPM_GLOBAL=$(npm config get prefix)
+	ESLINT_CONFIG_DIR="$NPM_GLOBAL/lib/eslint-configs"
+
+	# Create directory for global eslint configs
+	if [ ! -d "$ESLINT_CONFIG_DIR" ]; then
+		echo "Creating global eslint configs directory at $ESLINT_CONFIG_DIR"
+		mkdir -p "$ESLINT_CONFIG_DIR"
+	fi
+
+	# Remove existing files/symlinks if they exist
+	if [ -L "$ESLINT_CONFIG_DIR/eslint.config.ts" ] || [ -f "$ESLINT_CONFIG_DIR/eslint.config.ts" ]; then
+		rm -f "$ESLINT_CONFIG_DIR/eslint.config.ts"
+	fi
+
+	if [ -L "$ESLINT_CONFIG_DIR/eslint-utilities.ts" ] || [ -f "$ESLINT_CONFIG_DIR/eslint-utilities.ts" ]; then
+		rm -f "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
+	fi
+
+	# Create symlinks to eslint config files
+	echo "Installing ESLint configs globally..."
+	ln -s ~/.config/configs/eslint/eslint.config.ts "$ESLINT_CONFIG_DIR/eslint.config.ts"
+	ln -s ~/.config/configs/eslint/eslint-utilities.ts "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
+
+	echo "ESLint configs symlinked to $ESLINT_CONFIG_DIR"
+	echo "You can import them in your projects:"
+	echo "  import config from '$ESLINT_CONFIG_DIR/eslint.config.ts';"
 }
 
 install_bash_formatter() {
@@ -125,6 +174,7 @@ main() {
 	install_brew_packages
 	install_bash_formatter
 	install_npm_global_deps
+	install_eslint_configs
 	install_ruby_deps
 	enable_corepack
 }

@@ -38,8 +38,9 @@ Personal dotfiles and development environment configuration for macOS. Features 
 │   ├── .zshrc                   # Zsh configuration
 │   ├── .zshrc_pre               # Zsh pre-configuration (themes)
 │   ├── ssh_config.example       # SSH configuration template
-│   ├── eslint.config.ts         # ESLint flat config (modern)
-│   ├── eslint-utilities.ts      # ESLint shared utilities
+│   ├── eslint/                  # ESLint configurations
+│   │   ├── eslint.config.ts     # ESLint flat config (modern)
+│   │   └── eslint-utilities.ts  # ESLint shared utilities
 │   ├── prettier.config.js       # Prettier config (modern)
 │   ├── tsconfig.base.json       # TypeScript base config
 │   └── tsconfig.json            # TypeScript project config
@@ -149,8 +150,9 @@ Located in `bin/dev/setup/`:
   - Each function checks if tools are already installed
 
 - **`install-global-deps`** - Install global npm, brew, and pip packages
-  - ESLint, Prettier, TypeScript, Jest
+  - ESLint, Prettier, TypeScript, Jest (with all necessary plugins)
   - ripgrep, fzf, fd, zoxide, jq, yq
+  - Symlinks ESLint configs globally to npm lib directory
   - Each function handles its own dependency checks
 
 - **`link-dotfiles`** - Create symlinks from `~/.config/configs/` to home directory
@@ -214,13 +216,16 @@ Generic configs suitable for React/Node.js projects:
 
 - **`tsconfig.base.json`** - Base TypeScript configuration with strict settings
 - **`tsconfig.json`** - Project-specific TypeScript config
-- **`eslint.config.ts`** - Modern flat ESLint configuration
-- **`eslint-utilities.ts`** - Shared ESLint rules and plugins
+- **`eslint/eslint.config.ts`** - Modern flat ESLint configuration (symlinked globally by setup script)
+- **`eslint/eslint-utilities.ts`** - Shared ESLint rules and plugins (symlinked globally by setup script)
   - React, React Hooks, Redux Saga
   - Jest testing rules
   - Import sorting and organization
   - TypeScript strict rules
+  - Symlinked to: `$(npm config get prefix)/lib/eslint-configs/`
 - **`jest.config.js`** - Jest testing framework configuration
+
+> **Note:** The ESLint configs are automatically symlinked globally when running `install-global-deps`. Any updates to the configs in `~/.config/configs/eslint/` are immediately reflected globally. You can import them in your projects using the path shown during installation.
 
 ### Java Development
 
