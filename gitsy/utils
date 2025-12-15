@@ -264,13 +264,18 @@ create_worktree() {
 
 reset_to_target_branch() {
 	local target_branch=$1
+	local step_number=$2
+
+	if [ -z "$step_number" ]; then
+		step_number=0
+	fi
 
 	if [ -z "$target_branch" ]; then
 		print_message "${RED}Target branch is not set. [Fail]${NC}"
 		exit 1
 	fi
 
-	print_message "${BLUE}Resetting to ${NC}origin/${target_branch}${BLUE}...${NC}"
+	print_message "${BLUE}Resetting to ${NC}origin/${target_branch}${BLUE}...${NC}" $step_number
 
 	if ! git reset --hard "origin/${target_branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to reset to ${NC}origin/${target_branch}${RED}. [Fail]${NC}"

@@ -13,15 +13,15 @@ main() {
 	validate_dependencies git figlet lolcat
 	print_banner
 	target_branch=$(fetch_current_branch)
-	stash_changes true
+	stash_changes true 1
 	print_message ""
 
-	print_message "${BLUE}Fetching changes from remote/${target_branch}...${NC}"
+	print_message "${BLUE}Fetching changes from remote/${target_branch}...${NC}" 2
 	fetch_changes "$target_branch"
 	print_message ""
 
-	reset_to_target_branch "$target_branch"
-	pull_changes "$target_branch"
+	reset_to_target_branch "$target_branch" 3
+	pull_changes "$target_branch" 4
 }
 
 main
