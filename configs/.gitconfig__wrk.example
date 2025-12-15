@@ -1,0 +1,12 @@
+[user]
+	email = your.work.email@company.com
+	name = Your Name
+	signingkey = /path/to/.ssh/work_signing_key.pub
+[pull]
+	rebase = false
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = /path/to/.ssh/allowed_signers

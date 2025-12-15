@@ -1,0 +1,11 @@
+[user]
+	email = your.email@example.com
+	name = Your Name
+[pull]
+	rebase = false
+[submodule]
+	recurse = true
+[includeIf "gitdir:/path/to/work/directory/"]
+  path = ~/.config/configs/.gitconfig__wrk
+[includeIf "gitdir:/path/to/work/directory/**"]
+  path = ~/.config/configs/.gitconfig__wrk

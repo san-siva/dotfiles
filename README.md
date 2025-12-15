@@ -25,8 +25,8 @@ Personal dotfiles and development environment configuration for macOS. Features 
 │   └── utils.sh                 # Shared utility functions
 ├── configs/                     # Configuration files
 │   ├── .eslintrc.json           # ESLint configuration
-│   ├── .gitconfig               # Git configuration
-│   ├── .gitconfig__wrk          # Work-specific git config
+│   ├── .gitconfig.example       # Git configuration template
+│   ├── .gitconfig__wrk.example  # Work-specific git config template
 │   ├── .p10k.zsh                # Powerlevel10k theme
 │   ├── .prettierrc.json         # Prettier configuration
 │   ├── .tmux.conf               # Tmux configuration
@@ -65,7 +65,20 @@ Personal dotfiles and development environment configuration for macOS. Features 
    echo "source ~/.config/configs/.zshrc" > ~/.zshrc
    ```
 
-3. **Run the setup scripts:**
+3. **Set up your git configuration:**
+   ```bash
+   # Copy the example files
+   cp configs/.gitconfig.example configs/.gitconfig
+   cp configs/.gitconfig__wrk.example configs/.gitconfig__wrk
+
+   # Edit with your personal information
+   # configs/.gitconfig - Update email and name
+   # configs/.gitconfig__wrk - Update work email, name, and signing key paths
+   ```
+
+   > **Note:** The actual `.gitconfig` files are gitignored to protect your email from being exposed in the repository.
+
+4. **Run the setup scripts:**
    ```bash
    # Install development environment and tools
    ./bin/dev/setup/setup-environment
@@ -76,16 +89,6 @@ Personal dotfiles and development environment configuration for macOS. Features 
    # Create symlinks for config files
    ./bin/dev/setup/link-dotfiles
    ```
-
-4. **Customize work-specific git config:**
-
-   Edit `~/.config/configs/.gitconfig__wrk` and update:
-   ```ini
-   [user]
-       email = your.work@email.com  # Change this
-   ```
-
-   This config automatically applies to all repositories under `~/Documents/Work/`
 
 ## Scripts
 
@@ -145,7 +148,7 @@ Located in `bin/dev/setup/`:
 
 - **`link-dotfiles`** - Create symlinks from `~/.config/configs/` to home directory
   - Links: `.tmux.conf`, `.vimrc`, `.prettierrc.json`, `.eslintrc.json`, `.p10k.zsh`
-  - Links: `.gitconfig`, `.gitconfig__wrk`
+  - Links: `.gitconfig`, `.gitconfig__wrk` (must be created from `.example` files first)
 
 ### Git Workflow (Gitsy)
 
@@ -161,14 +164,17 @@ All configs are located in `configs/` and automatically linked to your home dire
 
 ### Git Configuration
 
-- **`.gitconfig`** - Main git configuration with personal email
+- **`.gitconfig.example`** - Template for main git configuration
+  - Copy to `.gitconfig` and customize with your email/name
   - Auto-includes work config for `~/Documents/Work/` repos
   - Configured for git submodules
 
-- **`.gitconfig__wrk`** - Work-specific overrides
-  - Custom work email
+- **`.gitconfig__wrk.example`** - Template for work-specific overrides
+  - Copy to `.gitconfig__wrk` and customize with your work email
   - GPG commit signing with SSH
-  - Uses `~/.ssh/san_siva__wrk_signing_key.pub`
+  - Update signing key path to match your SSH key location
+
+> **Privacy Note:** The actual `.gitconfig` and `.gitconfig__wrk` files are gitignored to prevent exposing personal email addresses in the repository. Always use the `.example` files as templates.
 
 ### Shell Configuration
 
@@ -358,10 +364,14 @@ The setup scripts will install these if missing:
 
 1. **Fork this repository** on GitHub
 
-2. **Update personal information:**
-   - `configs/.gitconfig` - Change email and name
-   - `configs/.gitconfig__wrk` - Set work email
-   - `bin/dev/setup-ssh-agent` - Update SSH key paths
+2. **Set up your personal git configuration:**
+   ```bash
+   cp configs/.gitconfig.example configs/.gitconfig
+   cp configs/.gitconfig__wrk.example configs/.gitconfig__wrk
+   ```
+   - Edit `configs/.gitconfig` - Change email and name
+   - Edit `configs/.gitconfig__wrk` - Set work email and signing key path
+   - Update `bin/dev/setup-ssh-agent` - Update SSH key paths
 
 3. **Customize the banner:**
    - Edit `bin/utils.sh` line 69-73
@@ -384,7 +394,9 @@ The setup scripts will install these if missing:
 
 The setup supports different git configs based on directory:
 - Personal repos: Uses `configs/.gitconfig` (personal email)
-- Work repos in `~/Documents/Work/`: Uses `configs/.gitconfig__wrk` (work email with GPG signing)
+- Work repos in `~/Documents/Work/`: Automatically uses `configs/.gitconfig__wrk` (work email with GPG signing)
+
+Both files must be created from their respective `.example` templates to protect your personal information from being committed to the repository.
 
 ## License
 
