@@ -12,37 +12,45 @@ main() {
 	echo "Creating symlinks for dotfiles..."
 	echo ""
 
-	# removing existing config files
-	if [ -f ~/.tmux.conf ]; then
+	# removing existing config files (including broken symlinks)
+	if [ -L ~/.tmux.conf ] || [ -f ~/.tmux.conf ]; then
 		rm -f ~/.tmux.conf
 	fi
 
-	if [ -f ~/.vimrc ]; then
+	if [ -L ~/.vimrc ] || [ -f ~/.vimrc ]; then
 		rm -f ~/.vimrc
 	fi
 
-	if [ -f ~/.prettierrc.json ]; then
+	if [ -L ~/.prettierrc.json ] || [ -f ~/.prettierrc.json ]; then
 		rm -f ~/.prettierrc.json
 	fi
 
-	if [ -f ~/.eslintrc.json ]; then
+	if [ -L ~/.eslintrc.json ] || [ -f ~/.eslintrc.json ]; then
 		rm -f ~/.eslintrc.json
 	fi
 
-	if [ -f ~/.eslintrc.js ]; then
+	if [ -L ~/.eslintrc.js ] || [ -f ~/.eslintrc.js ]; then
 		rm -f ~/.eslintrc.js
 	fi
 
-	if [ -f ~/.p10k.zsh ]; then
+	if [ -L ~/.p10k.zsh ] || [ -f ~/.p10k.zsh ]; then
 		rm -f ~/.p10k.zsh
 	fi
 
-	if [ -f ~/.gitconfig ]; then
+	if [ -L ~/.gitconfig ] || [ -f ~/.gitconfig ]; then
 		rm -f ~/.gitconfig
 	fi
 
-	if [ -f ~/.gitconfig__wrk ]; then
+	if [ -L ~/.gitconfig__wrk ] || [ -f ~/.gitconfig__wrk ]; then
 		rm -f ~/.gitconfig__wrk
+	fi
+
+	if [ -L ~/.local/share/eclipse/eclipse-java-google-style.xml ] || [ -f ~/.local/share/eclipse/eclipse-java-google-style.xml ]; then
+		rm -f ~/.local/share/eclipse/eclipse-java-google-style.xml
+	fi
+
+	if [ -L ~/.local/share/eclipse/lombok.jar ] || [ -f ~/.local/share/eclipse/lombok.jar ]; then
+		rm -f ~/.local/share/eclipse/lombok.jar
 	fi
 
 	ln -s ~/.config/configs/.tmux.conf ~/.tmux.conf
@@ -52,8 +60,8 @@ main() {
 	ln -s ~/.config/configs/.p10k.zsh ~/.p10k.zsh
 	ln -s ~/.config/configs/.gitconfig ~/.gitconfig
 	ln -s ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
-	ln -s ~/.config/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
-	ln -s ~/.config/lombok.jar ~/.local/share/eclipse/lombok.jar
+	ln -s ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
+	ln -s ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
 
 	echo "Symlinks created successfully!"
 }

@@ -1,4 +1,4 @@
-# Sankit Dotfiles
+# My Dotfiles
 
 Personal dotfiles and development environment configuration for macOS. Features organized configs, automated setup scripts, and a collection of productivity utilities.
 
@@ -51,7 +51,7 @@ Personal dotfiles and development environment configuration for macOS. Features 
 
 1. **Clone this repository with submodules:**
    ```bash
-   git clone --recursive https://github.com/yourusername/sankit-dotfiles ~/.config
+   git clone --recursive https://github.com/san-siva/dotfiles.git ~/.config
    cd ~/.config
    ```
 
