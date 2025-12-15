@@ -31,9 +31,10 @@ doctl/
 # Git directory
 .git/
 
-# Sensitive gitconfig files (contain personal email)
+# Sensitive config files (contain personal email/keys)
 configs/.gitconfig
 configs/.gitconfig__wrk
+configs/ssh_config
 
 # Old/deprecated files
 nvim_old_09-jan-23/

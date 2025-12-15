@@ -53,6 +53,10 @@ main() {
 		rm -f ~/.local/share/eclipse/lombok.jar
 	fi
 
+	if [ -L ~/.ssh/config ] || [ -f ~/.ssh/config ]; then
+		rm -f ~/.ssh/config
+	fi
+
 	ln -s ~/.config/configs/.tmux.conf ~/.tmux.conf
 	ln -s ~/.config/configs/.vimrc ~/.vimrc
 	ln -s ~/.config/configs/.prettierrc.json ~/.prettierrc.json
@@ -60,6 +64,7 @@ main() {
 	ln -s ~/.config/configs/.p10k.zsh ~/.p10k.zsh
 	ln -s ~/.config/configs/.gitconfig ~/.gitconfig
 	ln -s ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
+	ln -s ~/.config/configs/ssh_config ~/.ssh/config
 	ln -s ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
 	ln -s ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
 

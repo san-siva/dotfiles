@@ -37,6 +37,7 @@ Personal dotfiles and development environment configuration for macOS. Features 
 │   ├── .vimrc                   # Vim configuration
 │   ├── .zshrc                   # Zsh configuration
 │   ├── .zshrc_pre               # Zsh pre-configuration (themes)
+│   ├── ssh_config.example       # SSH configuration template
 │   ├── eslint.config.ts         # ESLint flat config (modern)
 │   ├── eslint-utilities.ts      # ESLint shared utilities
 │   ├── prettier.config.js       # Prettier config (modern)
@@ -69,18 +70,20 @@ Personal dotfiles and development environment configuration for macOS. Features 
    echo "source ~/.config/configs/.zshrc" > ~/.zshrc
    ```
 
-3. **Set up your git configuration:**
+3. **Set up your git and SSH configuration:**
    ```bash
    # Copy the example files
    cp configs/.gitconfig.example configs/.gitconfig
    cp configs/.gitconfig__wrk.example configs/.gitconfig__wrk
+   cp configs/ssh_config.example configs/ssh_config
 
    # Edit with your personal information
    # configs/.gitconfig - Update email and name
    # configs/.gitconfig__wrk - Update work email, name, and signing key paths
+   # configs/ssh_config - Update SSH key paths for your GitHub accounts
    ```
 
-   > **Note:** The actual `.gitconfig` files are gitignored to protect your email from being exposed in the repository.
+   > **Note:** The actual `.gitconfig` and `ssh_config` files are gitignored to protect your credentials from being exposed in the repository.
 
 4. **Run the setup scripts:**
    ```bash
@@ -152,7 +155,7 @@ Located in `bin/dev/setup/`:
 
 - **`link-dotfiles`** - Create symlinks from `~/.config/configs/` to home directory
   - Links: `.tmux.conf`, `.vimrc`, `.prettierrc.json`, `.eslintrc.json`, `.p10k.zsh`
-  - Links: `.gitconfig`, `.gitconfig__wrk` (must be created from `.example` files first)
+  - Links: `.gitconfig`, `.gitconfig__wrk`, `.ssh/config` (must be created from `.example` files first)
 
 ### Git Workflow (Gitsy)
 
@@ -179,6 +182,15 @@ All configs are located in `configs/` and automatically linked to your home dire
   - Update signing key path to match your SSH key location
 
 > **Privacy Note:** The actual `.gitconfig` and `.gitconfig__wrk` files are gitignored to prevent exposing personal email addresses in the repository. Always use the `.example` files as templates.
+
+### SSH Configuration
+
+- **`ssh_config.example`** - Template for SSH configuration
+  - Copy to `ssh_config` and customize with your SSH key paths
+  - Supports separate GitHub hosts for personal and work accounts
+  - Configure `IdentityFile` paths to match your SSH key locations
+
+> **Privacy Note:** The actual `ssh_config` file is gitignored to protect your SSH key paths from being exposed in the repository. Always use the `.example` file as a template.
 
 ### Shell Configuration
 
@@ -368,13 +380,15 @@ The setup scripts will install these if missing:
 
 1. **Fork this repository** on GitHub
 
-2. **Set up your personal git configuration:**
+2. **Set up your personal git and SSH configuration:**
    ```bash
    cp configs/.gitconfig.example configs/.gitconfig
    cp configs/.gitconfig__wrk.example configs/.gitconfig__wrk
+   cp configs/ssh_config.example configs/ssh_config
    ```
    - Edit `configs/.gitconfig` - Change email and name
    - Edit `configs/.gitconfig__wrk` - Set work email and signing key path
+   - Edit `configs/ssh_config` - Update SSH key paths for personal/work accounts
    - Update `bin/dev/setup-ssh-agent` - Update SSH key paths
 
 3. **Customize the banner:**
