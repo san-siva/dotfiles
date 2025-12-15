@@ -68,6 +68,15 @@ checkout_or_create_branch() {
 		step_number=3
 	fi
 
+	# Check if branch is already checked out in another worktree
+	local existing_worktree=$(git worktree list | grep "\[${target_branch}\]" | awk '{print $1}')
+	if [ -n "$existing_worktree" ]; then
+		print_message "${RED}Branch ${NC}${target_branch}${RED} is already checked out in worktree:${NC}" $step_number
+		print_message "${GREEN}${existing_worktree}${NC}"
+		print_message "${BLUE}Navigate to it with:${NC} ${GREEN}cd ${existing_worktree}${NC}"
+		exit 0
+	fi
+
 	# Determine worktree directory based on current location
 	local worktree_dir
 	local current_dir=$(basename "$PWD")

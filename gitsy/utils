@@ -225,7 +225,13 @@ create_worktree() {
 		fi
 
 		# Use the -b flag on worktree directly:
-		if ! git worktree add -b "$target_branch" "$worktree_path" "origin/$base_branch" 2>&1 | indent; then
+		local worktree_output
+		worktree_output=$(git worktree add -b "$target_branch" "$worktree_path" "origin/$base_branch" 2>&1)
+		local worktree_exit_code=$?
+
+		echo "$worktree_output" | indent
+
+		if [ $worktree_exit_code -ne 0 ]; then
 			print_message "${failed_worktree_message}"
 			exit 1
 		fi
@@ -241,7 +247,13 @@ create_worktree() {
 	fi
 
 	# Just add the worktree to an existing branch:
-	if ! git worktree add "$worktree_path" "$target_branch" 2>&1 | indent; then
+	local worktree_output
+	worktree_output=$(git worktree add "$worktree_path" "$target_branch" 2>&1)
+	local worktree_exit_code=$?
+
+	echo "$worktree_output" | indent
+
+	if [ $worktree_exit_code -ne 0 ]; then
 		print_message "${failed_worktree_message}"
 		exit 1
 	fi
