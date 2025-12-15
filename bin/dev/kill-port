@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 23-10-2025
+
+# Description:
+# This script kills an application running on a specified port.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+# Default Values
+port=
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "kill_app_on_port - kills an application running on a specified port"
+			echo " "
+			echo "kill_app_on_port [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help        show brief help"
+			echo "-p, --port=PORT   specify the port number"
+			exit 0
+			;;
+		-p=* | --port=*)
+			port="${1#*=}"
+			if [ -z "$port" ]; then
+				echo "${RED}Error: No port specified.${NC}"
+				exit 1
+			fi
+			;;
+		-p | --port)
+			shift
+			if [ $# -gt 0 ]; then
+				port="$1"
+			else
+				echo "${RED}Error: No port specified.${NC}"
+				exit 1
+			fi
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			echo "Use -h or --help for usage information."
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+kill_process_on_port() {
+	if [ -z "$port" ]; then
+		echo "${RED}Error: No port specified. Use -p or --port option.${NC}"
+		exit 1
+	fi
+
+	# Validate port is a number
+	if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+		echo "${RED}Error: Port must be a number.${NC}"
+		exit 1
+	fi
+
+	# Validate port range
+	if [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
+		echo "${RED}Error: Port must be between 1 and 65535.${NC}"
+		exit 1
+	fi
+
+	echo "1. ${BLUE}Finding process on port ${NC}${port}${BLUE}...${NC}"
+
+	# Find the process ID(s) using lsof
+	pids=$(lsof -ti tcp:"$port" 2>/dev/null)
+
+	if [ -z "$pids" ]; then
+		echo "   ${RED}No process found running on port ${NC}${port}${RED}. [Fail]${NC}"
+		exit 1
+	fi
+
+	# Get process details for display
+	process_count=$(echo "$pids" | wc -w | tr -d ' ')
+
+	if [ "$process_count" -eq 1 ]; then
+		echo "   ${GREEN}Found ${NC}${process_count}${GREEN} process${NC}"
+	else
+		echo "   ${GREEN}Found ${NC}${process_count}${GREEN} processes${NC}"
+	fi
+
+	# Kill all processes found on the port
+	killed_count=0
+	failed_count=0
+	step=2
+
+	for pid in $pids; do
+		# Get process command name
+		cmd=$(ps -p "$pid" -o comm= 2>/dev/null | tail -1)
+		if [ -n "$cmd" ]; then
+			echo "${step}. ${BLUE}Killing ${NC}${cmd}${BLUE} (PID: ${NC}${pid}${BLUE})...${NC}"
+		else
+			echo "${step}. ${BLUE}Killing process ${NC}${pid}${BLUE}...${NC}"
+		fi
+
+		if kill -9 "$pid" 2>/dev/null; then
+			echo "   ${GREEN}Process terminated successfully${NC}"
+			((killed_count++))
+		else
+			echo "   ${RED}Failed to terminate (may require sudo)${NC}"
+			((failed_count++))
+		fi
+		((step++))
+	done
+
+	echo ""
+	if [ $killed_count -gt 0 ]; then
+		if [ $killed_count -eq 1 ]; then
+			echo "   ${GREEN}✓ Killed ${NC}${killed_count}${GREEN} process on port ${NC}${port}${NC}"
+		else
+			echo "   ${GREEN}✓ Killed ${NC}${killed_count}${GREEN} processes on port ${NC}${port}${NC}"
+		fi
+	fi
+
+	if [ $failed_count -gt 0 ]; then
+		if [ $failed_count -eq 1 ]; then
+			echo "   ${RED}✗ Failed to kill ${NC}${failed_count}${RED} process${NC}"
+		else
+			echo "   ${RED}✗ Failed to kill ${NC}${failed_count}${RED} processes${NC}"
+		fi
+		echo "   ${RED}Try running with sudo if permission denied.${NC}"
+		exit 1
+	fi
+}
+
+main() {
+	validate_dependencies figlet lolcat
+	print_banner
+	set_flags "$@"
+	kill_process_on_port
+}
+
+main "$@"
+exit 0

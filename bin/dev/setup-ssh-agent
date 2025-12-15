@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# Sets up SSH agent and adds SSH keys silently, only printing errors.
+
+setup_ssh_agent() {
+    # Start ssh-agent silently
+    if ! eval $(ssh-agent) >/dev/null 2>&1; then
+        echo "Warning: Failed to start ssh-agent" >&2
+        return 1
+    fi
+
+    # Array of SSH keys to add
+    local ssh_keys=(
+        "$HOME/.ssh/san_siva__personal"
+        "$HOME/.ssh/san_siva__wrk"
+        "$HOME/.ssh/san_siva__wrk_signing_key"
+    )
+
+    # Add each key if it exists
+    for key in "${ssh_keys[@]}"; do
+        if [ -f "$key" ]; then
+            if ! ssh-add "$key" >/dev/null 2>&1; then
+                echo "Warning: Failed to add SSH key: $key" >&2
+            fi
+        fi
+    done
+}
+
+setup_ssh_agent

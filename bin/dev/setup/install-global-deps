@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script installs global dependencies for development environment.
+
+install_npm_global_deps() {
+	if ! [ -n "$(command -v npm)" ]; then
+		echo "npm not found"
+		echo "Attempting NVM Install"
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+		export NVM_DIR="$HOME/.nvm"
+		[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+		nvm install --lts
+		nvm install node
+	fi
+
+	if [ -n "$(command -v npm)" ]; then
+		# ESLINT
+		npm install -g \
+			eslint \
+			jiti \
+			@eslint/eslintrc \
+			eslint-plugin-react \
+			eslint-plugin-react-native \
+			eslint_d \
+			neovim
+
+		# Markdown
+		npm install -g \
+			markdownlint-cli2
+
+		# Jest
+		npm install -g \
+			jest \
+			eslint-plugin-jest
+
+		# Typescript
+		npm install -g \
+			typescript \
+			@typescript-eslint/eslint-plugin \
+			@typescript-eslint/parser
+
+		# Prettier
+		npm install -g \
+			prettier \
+			eslint-config-prettier
+
+		# utils
+		npm install -g \
+			local-ssl-proxy \
+			neovim
+
+		npm install -g \
+			@anthropic-ai/claude-code
+	else
+		echo "npm still not available after installation attempt"
+	fi
+}
+
+install_bash_formatter() {
+	if ! [ -n "$(command -v pip3)" ]; then
+		echo "pip3 not found, skipping bash formatter installation"
+		return 1
+	fi
+
+	pip3 install beautysh pynvim yamlfix shandy-sqlfmt
+}
+
+install_brew_packages() {
+	if ! [ -n "$(command -v brew)" ]; then
+		echo "brew not found, skipping brew package installation"
+		return 1
+	fi
+
+	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch
+
+	# Optional: Uncomment to setup mkcert
+	# mkcert -install
+	# mkcert localhost
+
+	# Install TPM if not already installed
+	if ! [ -d "$HOME/.tmux/plugins/tpm" ]; then
+		git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+	fi
+}
+
+install_ruby_deps() {
+	if ! [ -n "$(command -v gem)" ]; then
+		echo "gem not found, skipping ruby dependencies"
+		return 1
+	fi
+
+	gem install neovim
+}
+
+enable_corepack() {
+	if ! [ -n "$(command -v corepack)" ]; then
+		echo "Corepack not found, yarn not enabled"
+		return 1
+	fi
+
+	corepack enable
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+	echo "Installing global dependencies..."
+	echo ""
+
+	install_brew_packages
+	install_bash_formatter
+	install_npm_global_deps
+	install_ruby_deps
+	enable_corepack
+}
+
+main "$@"
+exit 0

@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script installs and runs a React Native app on Android with custom port, environment, and variant options.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+# Default Values
+port="8081"
+env=".env"
+variant=""
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "adb-install - install and run React Native app on Android"
+			echo " "
+			echo "adb-install [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-p, --port=PORT           override default port (8081)"
+			echo "-e, --env=FILE            environment file (dev, staging, prod)"
+			echo "-v, --variant=VARIANT     use variant modes"
+			exit 0
+			;;
+		-p=* | --port=*)
+			port="${1#*=}"
+			;;
+		-p | --port)
+			shift
+			if [ $# -gt 0 ]; then
+				port="$1"
+			fi
+			;;
+		-e=* | --env=*)
+			env="${1#*=}"
+			;;
+		-e | --env)
+			shift
+			if [ $# -gt 0 ]; then
+				env="$1"
+			fi
+			;;
+		-v=* | --variant=*)
+			variant="${1#*=}"
+			;;
+		-v | --variant)
+			shift
+			if [ $# -gt 0 ]; then
+				variant="$1"
+			fi
+			;;
+		*)
+			print_message "${RED}Unknown option:${NC} $1" 0
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+restore_env() {
+	print_message "${BLUE}Restoring .env file...${NC}" 0
+	if [ -f ./.env.bak ]; then
+		cp ./.env.bak ./.env
+		rm ./.env.bak
+	fi
+}
+
+install_app() {
+	print_message "${BLUE}Configuring environment...${NC}" 1
+
+	if [ "$env" != ".env" ]; then
+		if [ -f "$env" ]; then
+			print_message "${GREEN}Environment file found, copying ${NC}${env}${GREEN} to .env${NC}" 0
+			cp ./.env ./.env.bak 2>/dev/null
+			cp "./${env}" "./.env"
+		else
+			print_message "${RED}Environment file not found, defaulting to .env${NC}" 0
+			env='.env'
+		fi
+	fi
+
+	if [ -n "$variant" ]; then
+		print_message "${BLUE}Installing for port ${NC}${port}${BLUE}, environment ${NC}${env}${BLUE}, variant ${NC}${variant}" 2
+		print_message "" 0
+		yarn react-native run-android --port $port --variant $variant
+		restore_env
+		exit 0
+	fi
+
+	print_message "${BLUE}Installing for port ${NC}${port}${BLUE}, environment ${NC}${env}" 2
+	print_message "" 0
+	yarn react-native run-android --port $port
+	restore_env
+}
+
+main() {
+	if ! [ -n "$(command -v yarn)" ]; then
+		print_message "${RED}Yarn is not found, please install yarn${NC}" 0
+		exit 1
+	fi
+
+	validate_dependencies figlet lolcat
+	print_banner
+	set_flags "$@"
+	install_app
+}
+
+main "$@"
+exit 0

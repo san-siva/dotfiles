@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# A script to clear your working directory by stashing changes.
+# The stashed changes is tagged with the current date and time.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+# Default Values
+tag_message=
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-rmf - clear your working directory by stashing changes"
+			echo " "
+			echo "g-rmf [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-m, --message=MESSAGE     specify custom message for stash"
+			exit 0
+			;;
+		-m=* | --message=*)
+			tag_message="${1#*=}"
+			;;
+		-m | --message)
+			shift
+			if [ $# -gt 0 ]; then
+				tag_message="$1"
+			else
+				echo "${RED}Error: No message specified.$NC"
+				exit 1
+			fi
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit
+			;;
+		esac
+		shift
+	done
+}
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	set_flags "$@"
+	stash_changes true 1 "$tag_message"
+}
+
+main "$@"
+exit 0

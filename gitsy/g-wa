@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# This script creates a new git worktree for a specified branch.
+# If the branch does not exist, it prompts the user to create it.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+# Default Values
+stash=false
+target_branch=
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-wa - attempt to checkout to branch"
+			echo " "
+			echo "g-wa [options] application [arguments]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "--target-branch=BRANCH    specify the target branch"
+			echo "--stash-changes           stash changes before proceeding"
+			exit 0
+			;;
+		-t=* | --target-branch=*)
+			target_branch="${1#*=}"
+			if [ -z "$target_branch" ]; then
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-t | --target-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				target_branch="$1"
+			else
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-s | --stash-changes)
+			stash=true
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit
+			;;
+		esac
+		shift
+	done
+}
+
+try_fetching_branch() {
+	fetch_success=$(fetch_changes "${target_branch}")
+	if [ "${fetch_success}" = "false" ]; then
+		print_message "${RED}Failed to fetch changes for branch ${target_branch}. [Fail]${NC}" exit 1
+	fi
+}
+
+checkout_or_create_branch() {
+	local step_number=2
+	if [ "${stash}" = true ]; then
+		step_number=3
+	fi
+
+	# Determine worktree directory based on current location
+	local worktree_dir
+	local current_dir=$(basename "$PWD")
+	local parent_dir=$(basename "$(dirname "$PWD")")
+
+	# Check if we're already in a worktree (parent directory contains worktrees)
+	if [ "$parent_dir" = "worktrees" ]; then
+		# We're in a worktree, use parent of parent for new worktrees
+		worktree_dir="../"
+	else
+		# We're in main repo, create worktrees subdirectory
+		if [ ! -d "../worktrees" ]; then
+			mkdir ../worktrees
+		fi
+		worktree_dir="../worktrees/"
+	fi
+
+	# if target_branch length is more than 20 characters, truncate it to 20 characters
+	local worktree_name=$(echo $target_branch | sed -E 's/[^[:alnum:]]/_/g' | tr '[:upper:]' '[:lower:]')
+
+	if [ ${#target_branch} -gt 30 ]; then
+		worktree_name="${worktree_name:0:30}.."
+	fi
+
+	local path="${worktree_dir}${worktree_name}"
+
+	print_message "${BLUE}Creating worktree for branch ${NC}origin/${target_branch} ${BLUE}at${NC} ${path} ${BLUE}${NC}" $step_number
+
+	if [ -d "$path" ]; then
+		print_message "${RED}Worktree path already exists. [Fail]${NC}"
+		no_of_identical_dirs=$(find "${worktree_dir}" -maxdepth 1 -type d -name "${worktree_name}*" 2>/dev/null | wc -l)
+		path="${worktree_dir}${worktree_name}_$(($no_of_identical_dirs + 1))"
+		print_message "${BLUE}Using new path: ${NC}${path}${BLUE}${NC}"
+	fi
+
+	# Check if branch exists locally
+	if git show-ref --verify --quiet "refs/heads/${target_branch}"; then
+		try_fetching_branch
+		create_worktree "${target_branch}" "${path}"
+		return
+	fi
+
+	print_message "${RED}Branch not found locally.${NC}"
+	print_message "${BLUE}Checking if branch exists on remote...${NC}" $((step_number + 1))
+
+	if git ls-remote --heads origin "${target_branch}" | grep -q "${target_branch}"; then
+		print_message "${GREEN}Branch available on remote.${NC}"
+		try_fetching_branch
+		create_worktree "${target_branch}" "${path}"
+		return
+	fi
+
+	print_message "${RED}Branch not found on remote.${NC}"
+
+	create_new_branch=$(prompt_user true "Create new branch?" $((step_number + 1)))
+	if [ "${create_new_branch}" = "y" ]; then
+		create_worktree "${target_branch}" "${path}" true
+		return
+	fi
+
+	print_message "${RED}Aborted.${NC}"
+	exit 1
+}
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	set_flags "$@"
+	check_if_target_branch_is_set $target_branch
+	already_on_branch $target_branch
+	stash_changes $stash 2
+	checkout_or_create_branch
+}
+
+main "$@"
+exit 0

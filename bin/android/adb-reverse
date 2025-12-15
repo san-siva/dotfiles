@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script sets up reverse port forwarding from Android device to the development machine.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+# Default Values
+metro_port="8081"
+target_port="8081"
+ip_address=""
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "adb-reverse - setup reverse port forwarding for React Native"
+			echo " "
+			echo "adb-reverse [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-p, --metro-port=PORT     metro bundler port (defaults to 8081)"
+			echo "-t, --target-port=PORT    target port (defaults to 8081)"
+			echo "-i, --ip=ADDRESS          skip device discovery and use this ip address"
+			exit 0
+			;;
+		-p=* | --metro-port=*)
+			metro_port="${1#*=}"
+			;;
+		-p | --metro-port)
+			shift
+			if [ $# -gt 0 ]; then
+				metro_port="$1"
+			fi
+			;;
+		-t=* | --target-port=*)
+			target_port="${1#*=}"
+			;;
+		-t | --target-port)
+			shift
+			if [ $# -gt 0 ]; then
+				target_port="$1"
+			fi
+			;;
+		-i=* | --ip=*)
+			ip_address="${1#*=}"
+			;;
+		-i | --ip)
+			shift
+			if [ $# -gt 0 ]; then
+				ip_address="$1"
+			fi
+			;;
+		*)
+			print_message "${RED}Unknown option:${NC} $1" 0
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+reverse_port() {
+	if [ -z "$ip_address" ]; then
+		print_message "${BLUE}Discovering device IP address...${NC}" 1
+
+		ip_address=$(adb devices | egrep -o "192\.[0-9]+\.[0-9]+\.[0-9]+")
+
+		if ! [ $ip_address ]; then
+			device_tag=$(adb devices | egrep -o "adb-.*\._tcp\.")
+			if ! [ $device_tag ]; then
+				print_message "${BLUE}Device ip not found, attempting to find attached devices...${NC}" 0
+				attached_device_tag=$(adb devices | egrep -o "MF(\d|\w)+")
+				if ! [ $attached_device_tag ]; then
+					print_message "${RED}No attached devices found, exiting${NC}" 0
+					exit 1
+				fi
+				print_message "${GREEN}Found device id ${NC}${attached_device_tag}" 0
+				ip_address=$attached_device_tag
+			else
+				ip_address=$device_tag
+			fi
+		fi
+	fi
+
+	print_message "${GREEN}Using device: ${NC}${ip_address}" 0
+
+	print_message "${BLUE}Setting up reverse port forwarding from ${NC}tcp:${target_port}${BLUE} to ${NC}tcp:${metro_port}${BLUE}...${NC}" 2
+	if adb -s $ip_address reverse "tcp:${target_port}" "tcp:${metro_port}" 2>&1 | indent; then
+		print_message "${GREEN}Connected to device ${NC}${ip_address}${GREEN}, port ${NC}${metro_port}" 0
+	else
+		print_message "${RED}Failed to connect to ${NC}${metro_port}" 0
+		exit 1
+	fi
+}
+
+main() {
+	if ! [ -n "$(command -v adb)" ]; then
+		print_message "${RED}ADB is not found, please setup android sdk${NC}" 0
+		exit 1
+	fi
+
+	validate_dependencies figlet lolcat
+	print_banner
+	set_flags "$@"
+	reverse_port
+}
+
+main "$@"
+exit 0

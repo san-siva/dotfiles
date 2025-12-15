@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# This script returns the current branch name in a git repository.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+main() {
+	validate_dependencies git
+	print_banner
+	print_message "${BLUE}Fetching current branch...${NC}" 1
+	current_branch_name=$(git rev-parse --abbrev-ref HEAD)
+	if [ -z "$current_branch_name" ]; then
+		print_message "${RED}Failed to get current branch.${NC}"
+		exit 1
+	fi
+	echo "$current_branch_name" | indent
+	pbcopy <<<"$current_branch_name"
+	print_message "${GREEN}Current branch name copied to clipboard.${NC}"
+}
+
+main "$@"
+exit 0

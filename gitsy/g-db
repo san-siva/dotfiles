@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 12-02-2025
+
+# Description:
+# A script to delete a branch locally and push the deletion to remote.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+# Default Values
+target_branch=
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-db - delete a branch locally and optionally on remote"
+			echo " "
+			echo "g-db [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-t, --target-branch       specify the branch to delete"
+			exit 0
+			;;
+		-t=* | --target-branch=*)
+			target_branch="${1#*=}"
+			if [ -z "$target_branch" ]; then
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-t | --target-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				target_branch="$1"
+			else
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+
+delete_local_branch() {
+	local branch=$1
+	local step_number=3
+
+	if ! branch_exists_locally "${branch}"; then
+		print_message "${RED}Branch ${NC}${branch}${RED} does not exist locally.${NC}"
+		return 0
+	fi
+
+	current_branch=$(fetch_current_branch)
+	if [ "${branch}" = "${current_branch}" ]; then
+		print_message "${RED}Cannot delete the branch you are currently on.${NC}"
+		print_message "${RED}Please checkout to another branch first.${NC}"
+		exit 1
+	fi
+
+	print_message "${BLUE}Deleting local branch ${NC}${branch}${BLUE}...${NC}" $step_number
+
+	if ! git branch -d "${branch}" 2>&1 | indent; then
+		print_message "${RED}Failed to delete local branch ${NC}${branch}${RED}. [Fail]${NC}"
+		print_message "${PROMPT}Hint: Branch may not be fully merged. Use 'git branch -D ${branch}' to force delete.${NC}"
+		exit 1
+	fi
+
+	print_message "${GREEN}Local branch ${NC}${branch}${GREEN} deleted successfully.${NC}"
+}
+
+prompt_remote_deletion() {
+	local branch=$1
+
+	if ! branch_exists_on_remote "${branch}"; then
+		return 0
+	fi
+
+	delete_remote=$(prompt_user "true" "Delete branch on remote as well?" 5)
+	if [ "$delete_remote" = "n" ]; then
+		print_message "${BLUE}Skipping remote branch deletion.${NC}"
+		return 0
+	fi
+
+	print_message "${BLUE}Deleting remote branch ${NC}origin/${branch}${BLUE}...${NC}" 6
+	if ! git push origin --delete "${branch}" 2>&1 | indent; then
+		print_message "${RED}Failed to delete remote branch ${NC}origin/${branch}${RED}. [Fail]${NC}"
+		exit 1
+	fi
+
+	print_message "${GREEN}Remote branch ${NC}origin/${branch}${GREEN} deleted successfully.${NC}"
+}
+
+prompt_user_confirmation() {
+	local branch=$1
+	confirm=$(prompt_user "false" "Are you sure you want to delete branch ${branch}?" 2)
+	if [ "$confirm" = "n" ]; then
+		print_message "${RED}Operation cancelled by user.${NC}"
+		exit 0
+	fi
+}
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	set_flags "$@"
+	check_if_target_branch_is_set "$target_branch"
+	prompt_user_confirmation "$target_branch"
+	delete_local_branch "$target_branch"
+	prompt_remote_deletion "$target_branch"
+}
+
+main "$@"
+exit 0

@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script uninstalls an application from an Android device.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+# Default Values
+app_name=""
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "adb-uninstall - uninstall an app from Android device"
+			echo " "
+			echo "adb-uninstall [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-t, --target=APP          specify the app package name to uninstall"
+			exit 0
+			;;
+		-t=* | --target=*)
+			app_name="${1#*=}"
+			;;
+		-t | --target)
+			shift
+			if [ $# -gt 0 ]; then
+				app_name="$1"
+			else
+				print_message "${RED}Error: No app name specified.${NC}" 0
+				exit 1
+			fi
+			;;
+		*)
+			print_message "${RED}Unknown option:${NC} $1" 0
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+uninstall_app() {
+	if [ -z "$app_name" ]; then
+		print_message "${RED}-t Flag not set, exiting${NC}" 0
+		exit 1
+	fi
+
+	print_message "${BLUE}Finding connected device...${NC}" 1
+	ip_address=$(adb devices | egrep -o "192\.[0-9]+\.[0-9]+\.[0-9]+")
+
+	if ! [ $ip_address ]; then
+		device_tag=$(adb devices | egrep -o "adb-.*\._tcp\.")
+		if ! [ $device_tag ]; then
+			print_message "${BLUE}Device ip not found, attempting to find attached devices...${NC}" 0
+			attached_device_tag=$(adb devices | egrep -o "MF(\d|\w)+")
+			if ! [ $attached_device_tag ]; then
+				print_message "${RED}No attached devices found, exiting${NC}" 0
+				exit 1
+			fi
+			print_message "${GREEN}Found device id ${NC}${attached_device_tag}" 0
+			ip_address=$attached_device_tag
+		else
+			ip_address=$device_tag
+		fi
+	fi
+
+	print_message "${GREEN}Found device: ${NC}${ip_address}" 0
+
+	print_message "${BLUE}Uninstalling ${NC}${app_name}${BLUE}...${NC}" 2
+	if adb -s $ip_address uninstall "${app_name}" 2>&1 | indent; then
+		print_message "${GREEN}Uninstalled ${NC}${app_name}${GREEN} successfully${NC}" 0
+	else
+		print_message "${RED}Failed to uninstall ${NC}${app_name}" 0
+		exit 1
+	fi
+}
+
+main() {
+	if ! [ -n "$(command -v adb)" ]; then
+		print_message "${RED}ADB is not found, please setup android sdk${NC}" 0
+		exit 1
+	fi
+
+	validate_dependencies figlet lolcat
+	print_banner
+	set_flags "$@"
+	uninstall_app
+}
+
+main "$@"
+exit 0

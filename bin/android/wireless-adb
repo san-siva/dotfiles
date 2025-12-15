@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script enables wireless ADB debugging by connecting to a device over WiFi.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+connect_wireless_adb() {
+	if ! [ -n "$(command -v adb)" ]; then
+		print_message "${RED}ADB is not found, please setup android sdk${NC}" 0
+		exit 1
+	fi
+
+	print_message "${BLUE}Disconnecting existing ADB connections...${NC}" 1
+	adb disconnect >/dev/null 2>&1
+
+	print_message "${BLUE}Finding device IP address...${NC}" 2
+	ip_address=$(adb shell ip -f inet addr show wlan0 | egrep -o "inet\s(.+)\/" | egrep -o "[0-9\.]+")
+
+	if ! [ $ip_address ]; then
+		print_message "${RED}Device not found. Make sure device is connected via USB.${NC}" 0
+		exit 1
+	fi
+
+	print_message "${GREEN}Found device IP: ${NC}${ip_address}" 0
+
+	read -p "$(printf "%${default_spaces}s")3. ${PROMPT}Enter dynamic port: ${NC}" dynamic_port
+
+	if [ -z $dynamic_port ]; then
+		print_message "${RED}Port not entered${NC}" 0
+		exit 1
+	fi
+
+	print_message "${BLUE}Enabling TCP/IP mode on port ${NC}${dynamic_port}${BLUE}...${NC}" 4
+	tcpip=$(adb tcpip $dynamic_port)
+	is_invalid_port=$(echo $tcpip | egrep -o "invalid")
+
+	if ! [ $is_invalid_port ]; then
+		print_message "${BLUE}Connecting to ${NC}${ip_address}:${dynamic_port}${BLUE}...${NC}" 5
+		is_failed=$(adb connect $ip_address:$dynamic_port | egrep -o "failed")
+		if ! [ $is_failed ]; then
+			print_message "${GREEN}Connected to device successfully${NC}" 0
+			exit 0
+		fi
+		print_message "${RED}Connection refused${NC}" 0
+		exit 1
+	fi
+
+	print_message "${RED}Invalid port${NC}" 0
+	exit 1
+}
+
+main() {
+	validate_dependencies adb figlet lolcat
+	print_banner
+	connect_wireless_adb
+}
+
+main "$@"
+exit 0

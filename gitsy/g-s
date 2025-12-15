@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# This script returns the current status of the git repository.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	print_message "${BLUE}Fetching git status...${NC}" 1
+
+	current_branch=$(fetch_current_branch)
+
+	if ! git status 2>&1 | indent; then
+		print_message "${PROMPT}Failed to get git status. Are you in a git repository?${NC}"
+		return 1
+	else
+		print_message "${GREEN}Git status fetched successfully.${NC}" 0
+		return 0
+	fi
+}
+
+main "$@"
+exit 0

@@ -1,0 +1,31 @@
+set mouse+=a
+let mapleader=","
+
+set number
+set wrap
+set linebreak
+set nolist
+
+set relativenumber
+set title
+set autoindent
+set smartindent
+set hlsearch
+set nobackup
+set showcmd
+set cmdheight=1
+set laststatus=2
+set expandtab
+set scrolloff=10
+let shell="zsh"
+set ignorecase
+set smartcase
+set updatetime=250
+set smartcase
+set smarttab
+set breakindent
+set undofile
+set shiftwidth=2
+set tabstop=2
+set wrap
+set termguicolors

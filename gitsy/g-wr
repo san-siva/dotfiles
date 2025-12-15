@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 12-02-2025
+
+# Description:
+# This script removes a git worktree for a specified branch.
+# It searches through the worktrees directory and removes matching worktrees.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Default Values
+target_branch=
+worktree_name=
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-wr - remove a git worktree for a specified branch or name"
+			echo " "
+			echo "g-wr [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-t, --target-branch       specify the target branch"
+			echo "-w, --worktree-name       specify the worktree directory name"
+			exit 0
+			;;
+		-t=* | --target-branch=*)
+			target_branch="${1#*=}"
+			if [ -z "$target_branch" ]; then
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-t | --target-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				target_branch="$1"
+			else
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-w=* | --worktree-name=*)
+			worktree_name="${1#*=}"
+			if [ -z "$worktree_name" ]; then
+				echo "${RED}Error: No worktree name specified.$NC"
+				exit 1
+			fi
+			;;
+		-w | --worktree-name)
+			shift
+			if [ $# -gt 0 ]; then
+				worktree_name="$1"
+			else
+				echo "${RED}Error: No worktree name specified.$NC"
+				exit 1
+			fi
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+cd_to_main_dir() {
+	local current_dirname=$(basename "$current_dir")
+	if [ "$current_dirname" = "main" ]; then
+		return 0
+	fi
+
+	if [ -d "../main" ]; then
+		if navigate_to_dir "../main"; then
+			return 0
+		fi
+	fi
+
+	if [ -d "../../main" ]; then
+		if navigate_to_dir "../../main"; then
+			return 0
+		fi
+	fi
+
+	exit 1
+}
+
+cd_to_worktrees_dir() {
+	local current_dirname=$(basename "$current_dir")
+	if [ "$current_dirname" = "worktrees" ]; then
+		return 0
+	fi
+
+	if [ -d "../worktrees" ]; then
+		if navigate_to_dir "../worktrees"; then
+			return 0
+		fi
+	fi
+
+	if [ -d "../../worktrees" ]; then
+		if navigate_to_dir "../../worktrees"; then
+			return 0
+		fi
+	fi
+
+	print_message "${RED}Worktrees directory not found. [Fail]${NC}" 0 >&2
+	exit 1
+}
+
+find_dir_to_remove() {
+	local current_dir=$(pwd)
+
+	cd_to_worktrees_dir
+	local worktrees_dir=$(pwd)
+
+	worktree_path=""
+
+	if [ -n "$worktree_name" ]; then
+		for dir in *; do
+			if [ ! -d "$dir" ]; then
+				continue
+			fi
+
+			if [ "$dir" = "$worktree_name" ]; then
+				worktree_path="$worktrees_dir/$dir"
+				break
+			fi
+		done
+		cd_to_main_dir
+		if [ -z "$worktree_path" ]; then
+			return 1
+		fi
+		echo "$worktree_path"
+		return 0
+	fi
+
+	check_if_target_branch_is_set "$target_branch"
+
+	for dir in *; do
+		if [ ! -d "$dir" ]; then
+			continue
+		fi
+
+		if ! navigate_to_dir "$dir"; then
+			continue
+		fi
+
+		local branch=$(fetch_current_branch 2>/dev/null)
+		if [ -z "$branch" ]; then
+			navigate_to_dir "$worktrees_dir"
+			continue
+		fi
+
+		if [ "$branch" = "$target_branch" ]; then
+			worktree_path="$worktrees_dir/$dir"
+			break
+		fi
+
+		navigate_to_dir "$worktrees_dir"
+	done
+
+	cd_to_main_dir
+
+	if [ -z "$worktree_path" ]; then
+		return 1
+	fi
+
+	echo "$worktree_path"
+}
+
+check_if_worktree_is_clean() {
+	local worktree_path=$1
+
+	if ! has_uncommitted_changes "$worktree_path"; then
+		return 0
+	fi
+
+	response=$(prompt_user "false" "Your worktree has uncommitted changes. Do you want to discard them?" 3)
+	if [ "$response" = "n" ]; then
+		print_message "${RED}Skipping worktree removal.${NC}" 0
+		exit 0
+	fi
+}
+
+remove_worktree() {
+	local worktree_path=$1
+
+	print_message "${BLUE}Removing worktree at ${NC}${worktree_path}${BLUE}...${NC}" 4
+
+	if ! [ -n "$worktree_name" ]; then
+		# Try using git worktree remove first with --force flag
+		if git worktree remove --force "$worktree_path" 2>&1 | indent; then
+			# Verify the directory was actually removed
+			if [ ! -d "$worktree_path" ]; then
+				print_message "${GREEN}Worktree removed successfully using git.${NC}" 0
+				return 0
+			fi
+		fi
+		print_message "${PROMPT}Git worktree remove incomplete. Attempting manual removal...${NC}" 0
+	fi
+
+	# Fallback to rm -rf
+	if rm -rf "$worktree_path" 2>&1 | indent; then
+		if ! [ -n "$worktree_name" ]; then
+			# Also need to prune the worktree from git's records
+			git worktree prune 2>&1 | indent
+		fi
+		# Verify the directory was actually removed
+		if [ ! -d "$worktree_path" ]; then
+			print_message "${GREEN}Worktree removed successfully using rm -rf.${NC}" 0
+			return 0
+		fi
+	fi
+
+	print_message "${RED}Failed to remove worktree. [Fail]${NC}" 0
+	return 1
+}
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	set_flags "$@"
+
+	if [ -n "$worktree_name" ]; then
+		print_message "${BLUE}Searching for worktree with name ${NC}${worktree_name}${BLUE}...${NC}" 1
+	else
+		print_message "${BLUE}Searching for worktree with branch ${NC}${target_branch}${BLUE}...${NC}" 1
+	fi
+
+	worktree_path=$(find_dir_to_remove)
+	if [ -z "$worktree_path" ]; then
+		if [ -n "$worktree_name" ]; then
+			print_message "${RED}No worktree found with name ${NC}${worktree_name}${RED}. [Fail]${NC}" 0
+		else
+			print_message "${RED}No worktree found for branch ${NC}${target_branch}${RED}. [Fail]${NC}" 0
+		fi
+		exit 1
+	fi
+
+	worktree_dirname=$(basename "$worktree_path")
+	if [ -n "$worktree_name" ]; then
+		print_message "${GREEN}Found worktree: ${NC}${worktree_dirname}${NC}" 2
+	else
+		print_message "${GREEN}Found worktree: ${NC}${worktree_dirname}${GREEN} at ${NC}${worktree_path}${NC}" 2
+	fi
+
+	print_message "${BLUE}Checking for uncommitted changes...${NC}" 3
+	check_if_worktree_is_clean "$worktree_path"
+
+	remove_worktree "$worktree_path"
+}
+
+main "$@"
+exit 0

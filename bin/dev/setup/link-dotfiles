@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 15-12-2025
+
+# Description:
+# This script creates symlinks for dotfiles from ~/.config to the home directory.
+
+main() {
+	echo "Sankit"
+	echo ""
+	echo "Creating symlinks for dotfiles..."
+	echo ""
+
+	# removing existing config files
+	if [ -f ~/.tmux.conf ]; then
+		rm -f ~/.tmux.conf
+	fi
+
+	if [ -f ~/.vimrc ]; then
+		rm -f ~/.vimrc
+	fi
+
+	if [ -f ~/.prettierrc.json ]; then
+		rm -f ~/.prettierrc.json
+	fi
+
+	if [ -f ~/.eslintrc.json ]; then
+		rm -f ~/.eslintrc.json
+	fi
+
+	if [ -f ~/.eslintrc.js ]; then
+		rm -f ~/.eslintrc.js
+	fi
+
+	if [ -f ~/.p10k.zsh ]; then
+		rm -f ~/.p10k.zsh
+	fi
+
+	if [ -f ~/.gitconfig ]; then
+		rm -f ~/.gitconfig
+	fi
+
+	if [ -f ~/.gitconfig__wrk ]; then
+		rm -f ~/.gitconfig__wrk
+	fi
+
+	ln -s ~/.config/configs/.tmux.conf ~/.tmux.conf
+	ln -s ~/.config/configs/.vimrc ~/.vimrc
+	ln -s ~/.config/configs/.prettierrc.json ~/.prettierrc.json
+	ln -s ~/.config/configs/.eslintrc.json ~/.eslintrc.json
+	ln -s ~/.config/configs/.p10k.zsh ~/.p10k.zsh
+	ln -s ~/.config/configs/.gitconfig ~/.gitconfig
+	ln -s ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
+	ln -s ~/.config/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
+	ln -s ~/.config/lombok.jar ~/.local/share/eclipse/lombok.jar
+
+	echo "Symlinks created successfully!"
+}
+
+main "$@"
+exit 0

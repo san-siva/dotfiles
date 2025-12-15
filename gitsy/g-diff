@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# A script to compare changes between two git branches.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+target_branch=""
+source_branch=""
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-diff - compare changes between two git branches"
+			echo " "
+			echo "g-diff [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "-t, --target-branch=BRANCH    specify the target branch"
+			echo "-s, --source-branch=BRANCH    specify the source branch (defaults to current branch)"
+			exit 0
+			;;
+		-t=* | --target-branch=*)
+			target_branch="${1#*=}"
+			if [ -z "$target_branch" ]; then
+				echo "${RED}Error: No target branch specified.${NC}"
+				exit 1
+			fi
+			;;
+		-t | --target-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				target_branch="$1"
+			else
+				echo "${RED}Error: No target branch specified.${NC}"
+				exit 1
+			fi
+			;;
+		-s=* | --source-branch=*)
+			source_branch="${1#*=}"
+			if [ -z "$source_branch" ]; then
+				echo "${RED}Error: No source branch specified.${NC}"
+				exit 1
+			fi
+			;;
+		-s | --source-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				source_branch="$1"
+			else
+				echo "${RED}Error: No source branch specified.${NC}"
+				exit 1
+			fi
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
+compare_branches() {
+	local step_number=1
+
+	if [ -z "$source_branch" ]; then
+		print_message "${BLUE}Source branch not specified, using current branch...${NC}" $step_number
+		source_branch=$(fetch_current_branch true)
+		if [ -z "$source_branch" ]; then
+			print_message "${RED}Failed to get current branch.${NC}"
+			exit 1
+		fi
+		step_number=$((step_number + 1))
+	fi
+
+	print_message "${BLUE}Fetching latest changes for target branch ${NC}${target_branch}${BLUE}...${NC}" $step_number
+	if ! fetch_changes "${target_branch}"; then
+		print_message "${RED}Failed to fetch target branch ${NC}${target_branch}${RED}.${NC}"
+		exit 1
+	fi
+
+	step_number=$((step_number + 1))
+	print_message "${BLUE}Comparing ${NC}${source_branch}${BLUE} with ${NC}${target_branch}${BLUE}...${NC}" $step_number
+
+	if ! result=$(git diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
+		echo "$result" | indent
+		print_message "${RED}Failed to compare branches.${NC}"
+		exit 1
+	fi
+
+	if [ -n "$result" ]; then
+		echo "$result" | indent
+
+		# Get full filenames for clipboard
+		filenames=$(git diff --name-only "${source_branch}..origin/${target_branch}")
+		if [ -n "$filenames" ]; then
+			print_message "${GREEN}Full file paths copied to clipboard.${NC}"
+			pbcopy <<<"$filenames"
+		fi
+	else
+		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
+	fi
+}
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	set_flags "$@"
+	check_if_target_branch_is_set $target_branch
+	compare_branches
+}
+
+main "$@"
+exit 0
+

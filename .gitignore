@@ -1,0 +1,46 @@
+# System files
+.DS_Store
+*.log
+
+# IDE and tool configs (generated/cached)
+.claude/
+coc/
+configstore/
+github-copilot/
+gh-copilot/
+gh/
+thefuck/
+simple-update-notifier/
+
+# Application directories (generated/cached)
+GNS3/
+firebase/
+flipper/
+htop/
+iterm2/
+neofetch/
+nvim/plugin/
+nvim/packer.nvim/
+yarn/
+gcloud/
+dlv/
+pulse/
+jgit/
+doctl/
+
+# Git directory
+.git/
+
+# Old/deprecated files
+nvim_old_09-jan-23/
+windows_terminal/
+JetBrainsMonoPatched/
+
+# Allow these directories
+!assets/
+!configs/
+!bin/
+!nvim/
+!gitsy/
+!alacritty/
+!fish/

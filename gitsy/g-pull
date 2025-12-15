@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# A script to checkout branches, optionally stash changes, and manage git workflow efficiently.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+target_branch=
+do_fetch=false
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-co - attempt to checkout to branch"
+			echo " "
+			echo "g-co [options] application [arguments]"
+			echo " "
+			echo "options:"
+			echo "-h, --help                show brief help"
+			echo "--target-branch=BRANCH    specify the target branch"
+			echo "--stash-changes           stash changes before proceeding"
+			echo "-f, --fetch               fetch changes before pulling"
+			exit 0
+			;;
+		-t=* | --target-branch=*)
+			target_branch="${1#*=}"
+			if [ -z "$target_branch" ]; then
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-t | --target-branch)
+			shift
+			if [ $# -gt 0 ]; then
+				target_branch="$1"
+			else
+				echo "${RED}Error: No target branch specified.$NC"
+				exit 1
+			fi
+			;;
+		-f | --fetch)
+			do_fetch=true
+			;;
+		esac
+		shift
+	done
+}
+
+main() {
+	validate_dependencies
+	print_banner
+	set_flags "$@"
+	if [ -z "$target_branch" ]; then
+		target_branch=$(fetch_current_branch)
+	fi
+	if [ "$do_fetch" = "true" ]; then
+		print_message "${BLUE}Fetching changes...${NC}" 1
+		fetch_changes "$target_branch"
+		pull_changes "$target_branch" 2
+		exit 0
+	fi
+	pull_changes "$target_branch" 1
+}
+
+main "$@"
+exit 0

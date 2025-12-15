@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 03-08-2025
+
+# Description:
+# A script to quickly reset your working directory to the latest changes from the remote branch.
+# In case you ran this command by mistake, you can use the `git stash apply` command to restore your changes.
+
+source "$(dirname "${BASH_SOURCE[0]}")/utils"
+
+main() {
+	validate_dependencies git figlet lolcat
+	print_banner
+	target_branch=$(fetch_current_branch)
+	stash_changes true
+	print_message ""
+
+	print_message "${BLUE}Fetching changes from remote/${target_branch}...${NC}"
+	fetch_changes "$target_branch"
+	print_message ""
+
+	reset_to_target_branch "$target_branch"
+	pull_changes "$target_branch"
+}
+
+main
+exit 0

@@ -1,0 +1,334 @@
+#!/usr/bin/env bash
+#
+update_linux_packages() {
+	sudo apt update
+	sudo apt-get install build-essential curl file git
+}
+
+install_java() {
+	if [ -n "$(command -v java)" ]; then
+		echo 'Java already installed'
+	else
+		echo 'Installing Java'
+		brew install java
+		sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+	fi
+	if ! [ -d '/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home' ]; then
+		echo 'Creating Java 21'
+		brew install openjdk@21
+		sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk
+	fi
+}
+
+install_java_packages() {
+	if [ -n "$(command -v ant)" ]; then
+		echo 'Ant already installed'
+	else
+		echo 'Installing Ant'
+		brew install ant
+	fi
+	if [ -n "$(command -v mvn)" ]; then
+		echo 'Maven already installed'
+	else
+		echo 'Installing Maven'
+		brew install manven
+	fi
+	if [ -n "$(command -v mvn)" ]; then
+		echo 'Maven already installed'
+	else
+		echo 'Installing Maven'
+		brew install manven
+	fi
+	if [ -n "$(command -v jdtls)" ]; then
+		echo 'jdtls already installed'
+	else
+		echo 'Installing jdtls'
+		brew install jdtls
+	fi
+	if [ -n "$(command -v google-java-format)" ]; then
+		echo 'google-java-format already installed'
+	else
+		echo 'Installing google-java-format'
+		brew install google-java-format
+	fi
+	if ! [ -d "$HOME/.local/" ]; then
+		echo 'Creating .local directory'
+		mkdir $HOME/.local
+	fi
+	if ! [ -d "$HOME/.local/share/" ]; then
+		echo 'Creating .local/share directory'
+		mkdir $HOME/.local/share
+	fi
+	if ! [ -d "$HOME/.local/share/eclipse/" ]; then
+		echo 'Creating .local/share/eclipse directory'
+		mkdir $HOME/.local/share/eclipse
+	fi
+}
+
+install_node() {
+	if [ -n "$(command -v node)" ]; then
+		echo 'Node already installed'
+	else
+		echo 'Installing Node'
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+	fi
+}
+
+install_yarn() {
+	if [ -n "$(command -v yarn)" ]; then
+		echo 'Yarn already installed'
+	else
+		echo 'Installing Yarn'
+		brew install yarn
+	fi
+}
+
+install_neovim() {
+	if [ -n "$(command -v nvim)" ]; then
+		echo 'Neovim already installed'
+	else
+		echo 'Installing Neovim'
+		brew install neovim
+		git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+	fi
+}
+
+install_tmux() {
+	if [ -n "$(command -v tmux)" ]; then
+		echo 'Tmux already installed'
+	else
+		echo 'Installing Tmux'
+		brew install tmux
+		if [ -d "$HOME/.tmux/plugins/tpm" ]; then
+			echo 'Tmux Plugin Manager already installed'
+		else
+			echo 'Installing Tmux Plugin Manager'
+			git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+		fi
+	fi
+}
+
+install_kitty() {
+	if [ -n "$(command -v kitty)" ]; then
+		echo 'Kitty already installed'
+	else
+		echo 'Installing Kitty'
+		brew install --cask kitty
+	fi
+}
+
+install_python_wsl() {
+	if [ -n "$(command -v python)" ]; then
+		echo 'Python already installed'
+	else
+		echo 'Installing Python'
+		sudo apt-get install python
+	fi
+	if [ -n "$(command -v python3)" ]; then
+		echo 'Python3 already installed'
+	else
+		echo 'Installing Python3'
+		sudo apt-get install python3
+		sudo apt-get install python3-pip
+	fi
+}
+
+install_python() {
+	if [ -n "$(command -v python)" ]; then
+		echo 'Python already installed'
+	else
+		echo 'Installing Python'
+		brew install python
+	fi
+	if [ -n "$(command -v python3)" ]; then
+		echo 'Python3 already installed'
+	else
+		echo 'Installing Python3'
+		brew install python3 python3-pip
+	fi
+}
+
+install_sqlfluff_packages() {
+	if [ -n "$(command -v sqlfluff)" ]; then
+		echo 'sqlfluff already installed'
+	else
+		echo 'Installing sqlfluff'
+		pip3 install sqlfluff
+	fi
+}
+
+install_ruby() {
+	if [ -n "$(command -v gem)" ]; then
+		echo 'Ruby already installed'
+	else
+		echo 'Installing Ruby'
+		brew install ruby
+	fi
+}
+
+install_ruby_packages() {
+	if [ -n "$(command -v gem)" ]; then
+		echo 'gem-neovim already installed'
+	else
+		echo 'Installing gem-neovim'
+		gem install neovim
+	fi
+}
+
+install_rust() {
+	if [ -n "$(command -v cargo)" ]; then
+		echo 'Rust already installed'
+	else
+		echo 'Installing Rust'
+		brew install rust
+	fi
+}
+
+install_rust_sub_packages() {
+	if [ -n "$(command -v stylua)" ]; then
+		echo 'Stylua already installed'
+	else
+		echo 'Installing Stylua'
+		cargo install stylua
+	fi
+}
+
+install_go() {
+	if [ -n "$(command -v go)" ]; then
+		echo 'Go already installed'
+	else
+		echo 'Installing Go'
+		brew install go
+		echo 'Installing Go tools'
+		go install golang.org/x/tools/cmd/goimports@latest
+		go install github.com/go-delve/delve/cmd/dlv@latest
+		go install mvdan.cc/sh/v3/cmd/shfmt@latest
+	fi
+}
+
+install_oh_my_zsh() {
+	if [ -d "$HOME/.oh-my-zsh" ]; then
+		echo 'Oh My Zsh already installed'
+	else
+		echo 'Installing Oh My Zsh'
+		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+		# plugins
+		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+		echo "set ZSH_THEME='powerlevel10k/powerlevel10k'"
+		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+		echo "add zsh-history-substring-search to plugins"
+	fi
+	if [ -d "$HOME/powerlevel10k" ]; then
+		echo 'powerlevel10k already installed'
+	else
+		echo 'Installing powerlevel10k'
+		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+		echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+	fi
+	if [ -d "$HOME/.oh-my-zsh/plugins/history-substring-search" ]; then
+		echo 'history-substring-search already installed'
+	else
+		echo 'Installing history-substring-search'
+		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+	fi
+
+}
+
+install_markdown_preview() {
+	if [ -n "$(command -v markdownlint-cli2)" ]; then
+		echo 'markdownlint-cli2 already installed'
+	else
+		echo 'Installing markdownlint-cli2'
+		brew install markdownlint-cli2
+	fi
+}
+
+install_moreutils() {
+	if [ -n "$(command -v sponge)" ]; then
+		echo 'calc already installed'
+	else
+		echo 'Installing sponge'
+		brew install moreutils
+	fi
+}
+
+install_tree() {
+	if [ -n "$(command -v tree)" ]; then
+		echo 'tree already installed'
+	else
+		echo 'Installing tree'
+		brew install tree
+	fi
+}
+
+install_cmatrix() {
+	if [ -n "$(command -v cmartix)" ]; then
+		echo 'cmatrix already installed'
+	else
+		echo 'Installing cmatrix'
+		brew install cmatrix
+	fi
+}
+
+install_calc() {
+	if [ -n "$(command -v calc)" ]; then
+		echo 'calc already installed'
+	else
+		echo 'Installing calc'
+		brew install calc
+	fi
+}
+
+install_lua() {
+	if [ -n "$(command -v lua)" ]; then
+		echo 'lua already installed'
+	else
+		echo 'Installing lua'
+		brew install lua luarocks
+	fi
+}
+
+update_ca_certificates() {
+	if [ -n "$(command -v brew)" ]; then
+		echo "Brew not found. Skipping update of CA certificates."
+	fi
+	brew install ca-certificates
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	install_lua
+	install_python
+	install_neovim
+	install_node
+	install_yarn
+	install_ruby
+	install_ruby_packages
+	install_rust
+	install_rust_sub_packages
+	install_java
+	install_java_packages
+	install_tmux
+	install_kitty
+	install_oh_my_zsh
+	install_go
+	install_markdown_preview
+	install_sqlfluff_packages
+	install_moreutils
+	install_cmatrix
+	install_tree
+	update_ca_certificates
+
+	echo ""
+	echo "Running install-global-deps..."
+	exec "~/.config/bin/dev/setup/install-global-deps"
+
+	echo ""
+	echo "Running link-dotfiles..."
+	exec "~/.config/bin/dev/setup/link-dotfiles"
+}
+
+main "$@"
+exit 0
