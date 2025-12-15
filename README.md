@@ -2,13 +2,17 @@
 
 Personal dotfiles and development environment configuration for macOS. Features organized configs, automated setup scripts, and a collection of productivity utilities.
 
+![Terminal Setup](assets/terminal-setup.png)
+*Tmux + Neovim setup with Catppuccin theme and Powerlevel10k*
+
 ## Structure
 
 ```
 .
 ├── assets/                      # Static assets
 │   ├── catppuccin_*.zsh         # Zsh syntax highlighting themes
-│   └── JetBrainsMonoPatched.zip # Nerd Font for terminal
+│   ├── JetBrainsMonoPatched.zip # Nerd Font for terminal
+│   └── terminal-setup.png       # Terminal setup screenshot
 ├── bin/                         # Custom scripts and utilities
 │   ├── android/                 # Android development scripts
 │   │   ├── adb-install          # Install React Native apps
