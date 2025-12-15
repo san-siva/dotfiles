@@ -134,17 +134,22 @@ install_python_wsl() {
 }
 
 install_python() {
-	if [ -n "$(command -v python)" ]; then
-		echo 'Python already installed'
-	else
-		echo 'Installing Python'
-		brew install python
-	fi
 	if [ -n "$(command -v python3)" ]; then
 		echo 'Python3 already installed'
 	else
 		echo 'Installing Python3'
-		brew install python3 python3-pip
+		brew install python3
+	fi
+
+	# Create symlinks for python and pip if they don't exist
+	if [ ! -e "/opt/homebrew/bin/python" ] && [ -e "/opt/homebrew/bin/python3" ]; then
+		echo 'Creating python -> python3 symlink'
+		ln -s /opt/homebrew/bin/python3 /opt/homebrew/bin/python
+	fi
+
+	if [ ! -e "/opt/homebrew/bin/pip" ] && [ -e "/opt/homebrew/bin/pip3" ]; then
+		echo 'Creating pip -> pip3 symlink'
+		ln -s /opt/homebrew/bin/pip3 /opt/homebrew/bin/pip
 	fi
 }
 
@@ -212,24 +217,30 @@ install_oh_my_zsh() {
 	else
 		echo 'Installing Oh My Zsh'
 		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-		# plugins
+	fi
+
+	# Install powerlevel10k theme for Oh My Zsh
+	if [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+		echo 'powerlevel10k theme already installed'
+	else
+		echo 'Installing powerlevel10k theme'
 		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-		echo "set ZSH_THEME='powerlevel10k/powerlevel10k'"
-		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
-		echo "add zsh-history-substring-search to plugins"
 	fi
+
+	# Install powerlevel10k standalone (for direct sourcing)
 	if [ -d "$HOME/powerlevel10k" ]; then
-		echo 'powerlevel10k already installed'
+		echo 'powerlevel10k standalone already installed'
 	else
-		echo 'Installing powerlevel10k'
+		echo 'Installing powerlevel10k standalone'
 		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-		echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 	fi
-	if [ -d "$HOME/.oh-my-zsh/plugins/history-substring-search" ]; then
-		echo 'history-substring-search already installed'
+
+	# Install zsh-history-substring-search plugin
+	if [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search" ]; then
+		echo 'zsh-history-substring-search already installed'
 	else
-		echo 'Installing history-substring-search'
-		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+		echo 'Installing zsh-history-substring-search'
+		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
 	fi
 
 }

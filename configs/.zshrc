@@ -168,10 +168,15 @@ setup_ssh_agent() {
 }
 
 setup_aliases() {
+    # Git aliases
     alias g-wl="git worktree list"
+
+    # Tool aliases
     alias sed='gsed'
     alias gcs='gh copilot suggest'
     alias gce='gh copilot explain'
+
+    # Navigation aliases
     alias g3_config='cd ~/.config'
     alias g2_notes="cd ~/notes; nvim"
     alias g2_icloud="cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/"
