@@ -124,7 +124,7 @@ install_brew_packages() {
 		return 1
 	fi
 
-	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch
+	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch figlet lolcat
 
 	# Optional: Uncomment to setup mkcert
 	# mkcert -install

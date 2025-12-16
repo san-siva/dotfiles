@@ -30,6 +30,7 @@ doctl/
 
 # Git directory
 .git/
+git/
 
 # Sensitive config files (contain personal email/keys)
 configs/.gitconfig

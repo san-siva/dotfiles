@@ -152,6 +152,7 @@ Located in `bin/dev/setup/`:
 - **`install-global-deps`** - Install global npm, brew, and pip packages
   - ESLint, Prettier, TypeScript, Jest (with all necessary plugins)
   - ripgrep, fzf, fd, zoxide, jq, yq
+  - figlet, lolcat (for script banners)
   - Symlinks ESLint configs globally to npm lib directory
   - Each function handles its own dependency checks
 
