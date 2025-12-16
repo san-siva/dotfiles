@@ -1,9 +1,12 @@
+# Personal GitHub account - used for personal repositories
 Host github
     HostName github.com
     User git
     IdentityFile ~/.ssh/your_personal_key
     IdentitiesOnly no
 
+# Work GitHub account - automatically used for repos in work directory
+# via git URL rewriting configured in .gitconfig__wrk
 Host github-wrk
     HostName github.com
     User git

@@ -79,12 +79,12 @@ Personal dotfiles and development environment configuration for macOS. Features 
    cp configs/ssh_config.example configs/ssh_config
 
    # Edit with your personal information
-   # configs/.gitconfig - Update email and name
+   # configs/.gitconfig - Update email, name, and work directory path
    # configs/.gitconfig__wrk - Update work email, name, and signing key paths
-   # configs/ssh_config - Update SSH key paths for your GitHub accounts
+   # configs/ssh_config - Update SSH key paths for github and github-wrk aliases
    ```
 
-   > **Note:** The actual `.gitconfig` and `ssh_config` files are gitignored to protect your credentials from being exposed in the repository.
+   > **Note:** The actual `.gitconfig` and `ssh_config` files are gitignored to protect your credentials from being exposed in the repository. The work config includes URL rewriting to automatically use the correct SSH key for all GitHub operations in work repos.
 
 4. **Run the setup scripts:**
    ```bash
@@ -183,6 +183,10 @@ All configs are located in `configs/` and automatically linked to your home dire
   - Copy to `.gitconfig__wrk` and customize with your work email
   - GPG commit signing with SSH
   - Update signing key path to match your SSH key location
+  - **URL rewriting**: Automatically rewrites GitHub URLs to use `github-wrk` SSH alias
+    - `git@github.com:` → `git@github-wrk:` (for all work repos)
+    - `git@github-nexthink:` → `git@github-wrk:` (for org-specific URLs)
+    - Only applies to repos under the work directory path specified in `.gitconfig`
 
 > **Privacy Note:** The actual `.gitconfig` and `.gitconfig__wrk` files are gitignored to prevent exposing personal email addresses in the repository. Always use the `.example` files as templates.
 
@@ -192,6 +196,12 @@ All configs are located in `configs/` and automatically linked to your home dire
   - Copy to `ssh_config` and customize with your SSH key paths
   - Supports separate GitHub hosts for personal and work accounts
   - Configure `IdentityFile` paths to match your SSH key locations
+  - **Host aliases**:
+    - `github` - Personal GitHub account (uses personal SSH key)
+    - `github-wrk` - Work GitHub account (uses work SSH key)
+  - Works seamlessly with git URL rewriting in `.gitconfig__wrk`
+    - All GitHub URLs in work repos automatically use `github-wrk` alias
+    - Ensures correct SSH key is used for authentication and commit signing
 
 > **Privacy Note:** The actual `ssh_config` file is gitignored to protect your SSH key paths from being exposed in the repository. Always use the `.example` file as a template.
 
@@ -392,9 +402,9 @@ The setup scripts will install these if missing:
    cp configs/.gitconfig__wrk.example configs/.gitconfig__wrk
    cp configs/ssh_config.example configs/ssh_config
    ```
-   - Edit `configs/.gitconfig` - Change email and name
-   - Edit `configs/.gitconfig__wrk` - Set work email and signing key path
-   - Edit `configs/ssh_config` - Update SSH key paths for personal/work accounts
+   - Edit `configs/.gitconfig` - Change email, name, and work directory path (e.g., `~/Documents/Work/`)
+   - Edit `configs/.gitconfig__wrk` - Set work email, signing key path, and verify URL rewriting rules
+   - Edit `configs/ssh_config` - Update SSH key paths for `github` and `github-wrk` aliases
    - Update `bin/dev/setup-ssh-agent` - Update SSH key paths
 
 3. **Customize the banner:**
@@ -416,9 +426,25 @@ The setup scripts will install these if missing:
 
 ### Work/Personal Separation
 
-The setup supports different git configs based on directory:
-- Personal repos: Uses `configs/.gitconfig` (personal email)
-- Work repos in `~/Documents/Work/`: Automatically uses `configs/.gitconfig__wrk` (work email with GPG signing)
+The setup supports different git configs and SSH keys based on directory:
+
+**Git Configuration:**
+- Personal repos: Uses `configs/.gitconfig` (personal email, default GitHub URLs)
+- Work repos in `~/Documents/Work/`: Automatically uses `configs/.gitconfig__wrk`
+  - Work email with GPG signing using SSH
+  - Git URL rewriting: All `github.com` URLs automatically use `github-wrk` SSH alias
+  - Organization-specific URLs (e.g., `github-nexthink`) also rewritten to `github-wrk`
+
+**SSH Key Management:**
+- `github` alias → Personal SSH key (for personal repos)
+- `github-wrk` alias → Work SSH key (automatically used for all work repos via URL rewriting)
+- Submodules in work repos automatically use correct SSH key
+
+**How it works:**
+1. When you clone or pull in `~/Documents/Work/`, git includes `.gitconfig__wrk`
+2. URL rewriting rewrites `git@github.com:org/repo` → `git@github-wrk:org/repo`
+3. SSH uses the `github-wrk` alias configuration with your work SSH key
+4. Commits are signed with your work SSH signing key
 
 Both files must be created from their respective `.example` templates to protect your personal information from being committed to the repository.
 

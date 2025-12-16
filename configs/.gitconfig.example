@@ -5,6 +5,10 @@
 	rebase = false
 [submodule]
 	recurse = true
+
+# Conditional include: Apply work-specific git config for repositories
+# in the specified work directory (e.g., ~/Documents/Work/)
+# This enables work email, SSH commit signing, and GitHub URL rewriting
 [includeIf "gitdir:/path/to/work/directory/"]
   path = ~/.config/configs/.gitconfig__wrk
 [includeIf "gitdir:/path/to/work/directory/**"]

@@ -10,3 +10,10 @@
 	format = ssh
 [gpg "ssh"]
 	allowedSignersFile = /path/to/.ssh/allowed_signers
+
+# URL rewriting: Automatically use github-wrk SSH alias for all GitHub operations
+# This ensures the correct SSH key is used for authentication and commit signing
+# Only applies to repositories in the work directory path specified in .gitconfig
+[url "git@github-wrk:"]
+	insteadOf = git@github.com:
+	insteadOf = git@github-nexthink:
