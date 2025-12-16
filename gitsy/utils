@@ -320,6 +320,21 @@ push_changes() {
 		exit 1
 	fi
 
+	# Check if local branch is behind remote
+	if [ "$should_force_push" = "false" ]; then
+		fetch_changes "${target_branch}" >/dev/null 2>&1
+		local local_commit=$(git rev-parse "${target_branch}" 2>/dev/null)
+		local remote_commit=$(git rev-parse "origin/${target_branch}" 2>/dev/null)
+
+		if [ -n "$local_commit" ] && [ -n "$remote_commit" ] && [ "$local_commit" != "$remote_commit" ]; then
+			if ! git merge-base --is-ancestor "origin/${target_branch}" "${target_branch}" 2>/dev/null; then
+				print_message "${RED}Error: Your local branch is behind or has diverged from remote.${NC}" 0
+				print_message "${RED}Use ${NC}--force${RED} flag if you want to force push.${NC}" 0
+				exit 1
+			fi
+		fi
+	fi
+
 	if [ "$should_force_push" = "true" ]; then
 		print_message "${BLUE}Force pushing changes to ${NC}remote/${target_branch}${BLUE}...${NC}" $step_number
 		if ! git push --force origin "${target_branch}" 2>&1 | indent; then
@@ -356,6 +371,9 @@ check_if_target_branch_is_set() {
 
 navigate_to_dir() {
 	local dir=$1
+	if pwd | grep -q "$dir"; then
+		return 0
+	fi
 	if ! cd "$dir" 2>/dev/null; then
 		return 1
 	fi
@@ -400,7 +418,7 @@ has_uncommitted_changes() {
 		return 1
 	fi
 
-	if check_uncommitted_changes; then
+	if ! check_uncommitted_changes; then
 		if ! navigate_to_dir "$original_path"; then
 			print_message "${RED}Failed to navigate to original directory: ${NC}${original_path}${RED}. [Fail]${NC}" 0
 			exit 1

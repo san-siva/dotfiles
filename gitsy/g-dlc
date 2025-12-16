@@ -62,7 +62,7 @@ prompt_user_confirmation() {
 	fi
 }
 
-check_uncommitted_changes() {
+verify_no_uncommitted_changes() {
 	if [ "$force_mode" = "false" ]; then
 		print_message "${BLUE}Checking for uncommitted changes...${NC}" 2
 		if has_uncommitted_changes "."; then
@@ -84,7 +84,9 @@ discard_last_commit() {
 	fi
 	reset_exit_code=$?
 
-	echo "$reset_output" | indent
+	if [ -n "$reset_output" ]; then
+		echo "$reset_output" | indent
+	fi
 	if [ $reset_exit_code -ne 0 ]; then
 		print_message "${RED}Failed to discard the last commit. [Fail]${NC}" 0
 		exit 1
@@ -99,7 +101,7 @@ main() {
 	set_flags "$@"
 
 	prompt_user_confirmation
-	check_uncommitted_changes
+	verify_no_uncommitted_changes
 	discard_last_commit
 }
 
