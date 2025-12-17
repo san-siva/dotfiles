@@ -1,0 +1,19 @@
+# Website (documentation site - not needed in npm package)
+website/
+
+# Development files
+prompt.md
+.git/
+.gitignore
+.gitmodules
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

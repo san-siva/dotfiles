@@ -1,0 +1,17 @@
+# Development files
+prompt.md
+
+# npm package files
+node_modules/
+*.tgz
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
