@@ -15,7 +15,7 @@ main() {
 
 	current_branch=$(fetch_current_branch)
 
-	if ! git status 2>&1 | indent; then
+	if ! git -c color.ui=always status 2>&1 | indent; then
 		print_message "${PROMPT}Failed to get git status. Are you in a git repository?${NC}"
 		return 1
 	else

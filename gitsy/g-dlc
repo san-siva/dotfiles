@@ -78,9 +78,9 @@ discard_last_commit() {
 	print_message "${BLUE}Discarding the last commit...${NC}" 3
 
 	if [ "$force_mode" = "true" ]; then
-		reset_output=$(git reset --hard --no-recurse-submodules HEAD~1 2>&1)
+		reset_output=$(git -c color.ui=always reset --hard --no-recurse-submodules HEAD~1 2>&1)
 	else
-		reset_output=$(git reset --soft --no-recurse-submodules HEAD~1 2>&1)
+		reset_output=$(git -c color.ui=always reset --soft --no-recurse-submodules HEAD~1 2>&1)
 	fi
 	reset_exit_code=$?
 

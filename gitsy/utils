@@ -123,7 +123,7 @@ stash_changes() {
 	if [ "$stash_changes" = "true" ]; then
 		print_message "${BLUE}Stashing changes...${NC}" $step_number
 
-		if ! (git add -A 2>&1 | indent); then
+		if ! (git -c color.ui=always add -A 2>&1 | indent); then
 			print_message "${RED}Failed to add changes to stash. [Fail]${NC}" 0
 			exit 1
 		fi
@@ -138,7 +138,7 @@ stash_changes() {
 			stash_message="Auto stash; Branch: ${branch_name}; Date: ${stash_date}"
 		fi
 
-		if ! (git stash push -m "$stash_message" 2>&1 | indent 4); then
+		if ! (git -c color.ui=always stash push -m "$stash_message" 2>&1 | indent 4); then
 			print_message "${RED}Failed to stash changes. [Fail]${NC}" 0
 			exit 1
 		fi
@@ -155,7 +155,7 @@ fetch_changes() {
 		return 1
 	fi
 
-	if ! git fetch origin "${target_branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always fetch origin "${target_branch}" 2>&1 | indent; then
 		print_message "${PROMPT}Auto-Fetch failed, Please do it manually.${NC}"
 		return 1
 	else
@@ -175,7 +175,7 @@ checkout_branch() {
 	fi
 
 	if [ "$new_branch" = "true" ]; then
-		if ! git checkout -b "${target_branch}" 2>&1 | indent; then
+		if ! git -c color.ui=always checkout -b "${target_branch}" 2>&1 | indent; then
 			print_message "${RED}Failed to create new branch. [Fail]${NC}"
 			exit 1
 		fi
@@ -183,7 +183,7 @@ checkout_branch() {
 		return 0
 	fi
 
-	if ! git checkout "${target_branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always checkout "${target_branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to checkout to branch ${NC}${target_branch}${RED}. [Fail]${NC}"
 		exit 1
 	fi
@@ -226,7 +226,7 @@ create_worktree() {
 
 		# Use the -b flag on worktree directly:
 		local worktree_output
-		worktree_output=$(git worktree add -b "$target_branch" "$worktree_path" "origin/$base_branch" 2>&1)
+		worktree_output=$(git -c color.ui=always worktree add -b "$target_branch" "$worktree_path" "origin/$base_branch" 2>&1)
 		local worktree_exit_code=$?
 
 		echo "$worktree_output" | indent
@@ -237,7 +237,7 @@ create_worktree() {
 		fi
 
 		print_message "${BLUE}Pushing new branch ${NC}$target_branch${BLUE} to remote...${NC}"
-		if ! git push -u origin "$target_branch" 2>&1 | indent; then
+		if ! git -c color.ui=always push -u origin "$target_branch" 2>&1 | indent; then
 			print_message "${RED}Failed to push new branch ${NC}$target_branch${RED} to remote. [Fail]${NC}"
 			exit 1
 		fi
@@ -248,7 +248,7 @@ create_worktree() {
 
 	# Just add the worktree to an existing branch:
 	local worktree_output
-	worktree_output=$(git worktree add "$worktree_path" "$target_branch" 2>&1)
+	worktree_output=$(git -c color.ui=always worktree add "$worktree_path" "$target_branch" 2>&1)
 	local worktree_exit_code=$?
 
 	echo "$worktree_output" | indent
@@ -277,7 +277,7 @@ reset_to_target_branch() {
 
 	print_message "${BLUE}Resetting to ${NC}origin/${target_branch}${BLUE}...${NC}" $step_number
 
-	if ! git reset --hard "origin/${target_branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always reset --hard "origin/${target_branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to reset to ${NC}origin/${target_branch}${RED}. [Fail]${NC}"
 		exit 1
 	fi
@@ -299,7 +299,7 @@ pull_changes() {
 	fi
 
 	print_message "${BLUE}Pulling changes from ${NC}remote/${target_branch}${BLUE}...${NC}" $step_number
-	if ! git pull origin "${target_branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always pull origin "${target_branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to pull changes from remote. [Fail]${NC}"
 		exit 1
 	fi
@@ -337,13 +337,13 @@ push_changes() {
 
 	if [ "$should_force_push" = "true" ]; then
 		print_message "${BLUE}Force pushing changes to ${NC}remote/${target_branch}${BLUE}...${NC}" $step_number
-		if ! git push --force origin "${target_branch}" 2>&1 | indent; then
+		if ! git -c color.ui=always push --force origin "${target_branch}" 2>&1 | indent; then
 			print_message "${RED}Failed to force push changes to remote. [Fail]${NC}"
 			exit 1
 		fi
 	else
 		print_message "${BLUE}Pushing changes to ${NC}remote/${target_branch}${BLUE}...${NC}" $step_number
-		if ! git push origin "${target_branch}" 2>&1 | indent; then
+		if ! git -c color.ui=always push origin "${target_branch}" 2>&1 | indent; then
 			print_message "${RED}Failed to push changes to remote. [Fail]${NC}"
 			exit 1
 		fi

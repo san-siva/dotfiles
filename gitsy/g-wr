@@ -195,7 +195,7 @@ remove_worktree() {
 
 	if ! [ -n "$worktree_name" ]; then
 		# Try using git worktree remove first with --force flag
-		if git worktree remove --force "$worktree_path" 2>&1 | indent; then
+		if git -c color.ui=always worktree remove --force "$worktree_path" 2>&1 | indent; then
 			# Verify the directory was actually removed
 			if [ ! -d "$worktree_path" ]; then
 				print_message "${GREEN}Worktree removed successfully using git.${NC}" 0
@@ -209,7 +209,7 @@ remove_worktree() {
 	if rm -rf "$worktree_path" 2>&1 | indent; then
 		if ! [ -n "$worktree_name" ]; then
 			# Also need to prune the worktree from git's records
-			git worktree prune 2>&1 | indent
+			git -c color.ui=always worktree prune 2>&1 | indent
 		fi
 		# Verify the directory was actually removed
 		if [ ! -d "$worktree_path" ]; then

@@ -88,7 +88,7 @@ compare_branches() {
 	step_number=$((step_number + 1))
 	print_message "${BLUE}Comparing ${NC}${source_branch}${BLUE} with ${NC}${target_branch}${BLUE}...${NC}" $step_number
 
-	if ! result=$(git diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
+	if ! result=$(git -c color.ui=always diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
 		echo "$result" | indent
 		print_message "${RED}Failed to compare branches.${NC}"
 		exit 1
@@ -98,7 +98,7 @@ compare_branches() {
 		echo "$result" | indent
 
 		# Get full filenames for clipboard
-		filenames=$(git diff --name-only "${source_branch}..origin/${target_branch}")
+		filenames=$(git -c color.ui=always diff --name-only "${source_branch}..origin/${target_branch}")
 		if [ -n "$filenames" ]; then
 			print_message "${GREEN}Full file paths copied to clipboard.${NC}"
 			pbcopy <<<"$filenames"

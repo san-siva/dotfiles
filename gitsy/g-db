@@ -68,7 +68,7 @@ delete_local_branch() {
 
 	print_message "${BLUE}Deleting local branch ${NC}${branch}${BLUE}...${NC}" $step_number
 
-	if ! git branch -d "${branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always branch -d "${branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to delete local branch ${NC}${branch}${RED}. [Fail]${NC}"
 		print_message "${PROMPT}Hint: Branch may not be fully merged. Use 'git branch -D ${branch}' to force delete.${NC}"
 		exit 1
@@ -91,7 +91,7 @@ prompt_remote_deletion() {
 	fi
 
 	print_message "${BLUE}Deleting remote branch ${NC}origin/${branch}${BLUE}...${NC}" 6
-	if ! git push origin --delete "${branch}" 2>&1 | indent; then
+	if ! git -c color.ui=always push origin --delete "${branch}" 2>&1 | indent; then
 		print_message "${RED}Failed to delete remote branch ${NC}origin/${branch}${RED}. [Fail]${NC}"
 		exit 1
 	fi
