@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 17-12-2025
+
+# Description:
+# This script reinstalls the @anthropic-ai/claude-code package.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+get_claude_dir() {
+	claude_dir=$(npm root -g)/@anthropic-ai/claude-code
+	echo "$claude_dir"
+}
+
+try_uninstall() {
+	if (npm uninstall -g @anthropic-ai/claude-code >/dev/null 2>&1); then
+		print_message "${GREEN}Uninstalled successfully${NC}" 2
+		return 0
+	fi
+	print_message "${RED}Failed to uninstall${NC}" 0
+	return 1
+}
+
+try_force_uninstall() {
+	if (npm uninstall -g --force @anthropic-ai/claude-code >/dev/null 2>&1); then
+		print_message "${GREEN}Force uninstalled successfully${NC}" 2
+		return 0
+	fi
+	print_message "${RED}Failed to force uninstall${NC}" 0
+	return 1
+}
+
+try_removing_claude_from_bin() {
+	claude_dir=$(get_claude_dir)
+	if [ -d "$claude_dir" ]; then
+		print_message "${GREEN}Removing claude from bin directory${NC}" 2
+		rm -rf "$claude_dir"
+		return 0
+	fi
+	print_message "${RED}Failed to remove claude from bin directory${NC}" 0
+	return 1
+}
+
+try_installing_claude() {
+	if (npm install -g @anthropic-ai/claude-code >/dev/null 2>&1); then
+		print_message "${GREEN}Installed successfully${NC}" 4
+		return 0
+	fi
+	return 1
+}
+
+main() {
+	validate_dependencies figlet lolcat
+	print_banner
+
+	print_message "${BLUE}Attempting to uninstall Claude Code...${NC}" 1
+
+	if try_uninstall; then
+		:
+	elif try_force_uninstall; then
+		:
+	elif try_removing_claude_from_bin; then
+		:
+	else
+		print_message "${RED}All uninstall methods failed. Proceeding with installation anyway...${NC}" 0
+	fi
+
+	print_message "${BLUE}Installing Claude Code...${NC}" 3
+	if try_installing_claude; then
+		print_message "${GREEN}Claude Code reinstalled successfully!${NC}" 5
+		return 0
+	else
+		print_message "${RED}Failed to install Claude Code.${NC}" 0
+		return 1
+	fi
+}
+
+main "$@"
