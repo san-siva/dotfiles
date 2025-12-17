@@ -8,7 +8,29 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/utils"
 
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "g-cb - show current branch name"
+			echo " "
+			echo "g-cb [options]"
+			echo " "
+			echo "options:"
+			echo "-h, --help          show brief help"
+			exit 0
+			;;
+		*)
+			echo "${RED}Unknown option:${NC} $1"
+			exit 1
+			;;
+		esac
+		shift
+	done
+}
+
 main() {
+	set_flags "$@"
 	validate_dependencies git
 	print_banner
 	print_message "${BLUE}Fetching current branch...${NC}" 1

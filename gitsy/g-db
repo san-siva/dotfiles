@@ -20,8 +20,8 @@ set_flags() {
 			echo "g-db [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help                show brief help"
-			echo "-t, --target-branch       specify the branch to delete"
+			echo "-h, --help                                                             show brief help"
+			echo "--target-branch BRANCH, --target-branch=BRANCH, -t=BRANCH, -t BRANCH   specify the branch to delete"
 			exit 0
 			;;
 		-t=* | --target-branch=*)
@@ -109,9 +109,9 @@ prompt_user_confirmation() {
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies git figlet lolcat
 	print_banner
-	set_flags "$@"
 	check_if_target_branch_is_set "$target_branch"
 	prompt_user_confirmation "$target_branch"
 	delete_local_branch "$target_branch"

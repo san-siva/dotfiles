@@ -18,12 +18,12 @@ set_flags() {
 		-h | --help)
 			echo "g-co - attempt to checkout to branch"
 			echo " "
-			echo "g-co [options] application [arguments]"
+			echo "g-co [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help                show brief help"
-			echo "--target-branch=BRANCH    specify the target branch"
-			echo "--stash-changes           stash changes before proceeding"
+			echo "-h, --help                                                          show brief help"
+			echo "--target-branch BRANCH, --target-branch=BRANCH, -t=BRANCH, -t BRANCH   specify the target branch"
+			echo "--stash-changes                                                     stash changes before proceeding"
 			exit 0
 			;;
 		-t=* | --target-branch=*)
@@ -92,9 +92,9 @@ checkout_or_create_branch() {
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies git figlet lolcat
 	print_banner
-	set_flags "$@"
 	check_if_target_branch_is_set $target_branch
 	already_on_branch $target_branch
 	stash_changes $stash

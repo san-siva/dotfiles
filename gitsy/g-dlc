@@ -15,13 +15,13 @@ set_flags() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		-h | --help)
-			echo "g-discard_last_commit - discard the last commit"
+			echo "g-dlc - discard the last commit"
 			echo " "
-			echo "g-discard_last_commit [options]"
+			echo "g-dlc [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help          show brief help"
-			echo "-f, --force         force discard without checking uncommitted changes"
+			echo "-h, --help      show brief help"
+			echo "-f, --force     force discard without checking uncommitted changes"
 			exit 0
 			;;
 		-f=* | --force=*)
@@ -96,9 +96,9 @@ discard_last_commit() {
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies git figlet lolcat
 	print_banner
-	set_flags "$@"
 
 	prompt_user_confirmation
 	verify_no_uncommitted_changes

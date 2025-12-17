@@ -17,15 +17,15 @@ set_flags() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		-h | --help)
-			echo "g-co - attempt to checkout to branch"
+			echo "g-pull - pull changes from remote branch"
 			echo " "
-			echo "g-co [options] application [arguments]"
+			echo "g-pull [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help                show brief help"
-			echo "--target-branch=BRANCH    specify the target branch"
-			echo "--stash-changes           stash changes before proceeding"
-			echo "-f, --fetch               fetch changes before pulling"
+			echo "-h, --help                                                             show brief help"
+			echo "--target-branch BRANCH, --target-branch=BRANCH, -t=BRANCH, -t BRANCH   specify the target branch"
+			echo "--stash-changes                                                        stash changes before proceeding"
+			echo "-f, --fetch                                                            fetch changes before pulling"
 			exit 0
 			;;
 		-t=* | --target-branch=*)
@@ -53,9 +53,9 @@ set_flags() {
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies
 	print_banner
-	set_flags "$@"
 	if [ -z "$target_branch" ]; then
 		target_branch=$(fetch_current_branch)
 	fi

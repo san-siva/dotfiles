@@ -11,6 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/utils"
 target_branch=""
 source_branch=""
 full_diff=false
+files_only=false
 
 set_flags() {
 	while [ $# -gt 0 ]; do
@@ -21,14 +22,18 @@ set_flags() {
 			echo "g-diff [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help                show brief help"
-			echo "-t, --target-branch=BRANCH    specify the target branch"
-			echo "-s, --source-branch=BRANCH    specify the source branch (defaults to current branch)"
-			echo "-f, --full                show full diff and copy to clipboard"
+			echo "-h, --help                                                             show brief help"
+			echo "--target-branch BRANCH, --target-branch=BRANCH, -t=BRANCH, -t BRANCH   specify the target branch"
+			echo "--source-branch BRANCH, --source-branch=BRANCH, -s=BRANCH, -s BRANCH   specify the source branch (defaults to current branch)"
+			echo "-f, --full                                                             show full diff and copy to clipboard"
+			echo "--files-only                                                           show only file names (no stats, no clipboard)"
 			exit 0
 			;;
 		-f | --full)
 			full_diff=true
+			;;
+		--files-only)
+			files_only=true
 			;;
 		-t=* | --target-branch=*)
 			target_branch="${1#*=}"
@@ -142,6 +147,21 @@ show_full_diff() {
 	fi
 }
 
+show_files_only() {
+	local filenames
+	if ! filenames=$(git diff --name-only "${source_branch}..origin/${target_branch}" 2>&1); then
+		echo "$filenames" | indent
+		print_message "${RED}Failed to compare branches.${NC}"
+		exit 1
+	fi
+
+	if [ -n "$filenames" ]; then
+		echo "$filenames" | indent
+	else
+		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
+	fi
+}
+
 show_stat_summary() {
 	local result
 	if ! result=$(git -c color.ui=always diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
@@ -153,9 +173,9 @@ show_stat_summary() {
 	if [ -n "$result" ]; then
 		echo "$result" | indent
 
-		# Get full filenames for clipboard
-		local filenames=$(git diff --name-only "${source_branch}..origin/${target_branch}")
-		copy_to_clipboard "$filenames" "Full file paths copied to clipboard."
+		# Copy stats to clipboard (strip color codes)
+		local stats_content=$(git diff --stat "${source_branch}..origin/${target_branch}")
+		copy_to_clipboard "$stats_content" "Stats copied to clipboard."
 	else
 		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
 	fi
@@ -188,13 +208,18 @@ compare_branches() {
 		return 0
 	fi
 
+	if [ "$files_only" = true ]; then
+		show_files_only
+		return 0
+	fi
+
 	show_stat_summary
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies git figlet lolcat
 	print_banner
-	set_flags "$@"
 	check_if_target_branch_is_set $target_branch
 	compare_branches
 }

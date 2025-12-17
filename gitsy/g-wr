@@ -24,9 +24,9 @@ set_flags() {
 			echo "g-wr [options]"
 			echo " "
 			echo "options:"
-			echo "-h, --help                show brief help"
-			echo "-t, --target-branch       specify the target branch"
-			echo "-w, --worktree-name       specify the worktree directory name"
+			echo "-h, --help                                                             show brief help"
+			echo "--target-branch BRANCH, --target-branch=BRANCH, -t=BRANCH, -t BRANCH   specify the target branch"
+			echo "--worktree-name NAME, --worktree-name=NAME, -w=NAME, -w NAME           specify the worktree directory name"
 			exit 0
 			;;
 		-t=* | --target-branch=*)
@@ -223,9 +223,9 @@ remove_worktree() {
 }
 
 main() {
+	set_flags "$@"
 	validate_dependencies git figlet lolcat
 	print_banner
-	set_flags "$@"
 
 	if [ -n "$worktree_name" ]; then
 		print_message "${BLUE}Searching for worktree with name ${NC}${worktree_name}${BLUE}...${NC}" 1
