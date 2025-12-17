@@ -1,0 +1,70 @@
+{
+  "name": "gitsy",
+  "version": "1.0.0",
+  "description": "A set of bash utilities for managing Git repositories with ease",
+  "keywords": [
+    "git",
+    "cli",
+    "bash",
+    "git-tools",
+    "git-utilities",
+    "workflow",
+    "productivity"
+  ],
+  "homepage": "https://gitsy-56895.web.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/san-siva/gitsy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/san-siva/gitsy/issues"
+  },
+  "author": {
+    "name": "Santhosh Siva",
+    "url": "https://github.com/san-siva"
+  },
+  "license": "MIT",
+  "bin": {
+    "g-co": "./g-co",
+    "g-pull": "./g-pull",
+    "g-push": "./g-push",
+    "g-wa": "./g-wa",
+    "g-wr": "./g-wr",
+    "g-db": "./g-db",
+    "g-dlc": "./g-dlc",
+    "g-rmf": "./g-rmf",
+    "g-rto": "./g-rto",
+    "g-cb": "./g-cb",
+    "g-s": "./g-s",
+    "g-diff": "./g-diff"
+  },
+  "files": [
+    "g-co",
+    "g-pull",
+    "g-push",
+    "g-wa",
+    "g-wr",
+    "g-db",
+    "g-dlc",
+    "g-rmf",
+    "g-rto",
+    "g-cb",
+    "g-s",
+    "g-diff",
+    "utils",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bash -c 'for script in g-*; do bash -n \"$script\" || exit 1; done'",
+    "postinstall": "echo '\\n✓ gitsy installed successfully!\\n\\nDependencies required: git, figlet, lolcat\\n\\nRun any command with --help to get started:\\n  g-co --help\\n\\nDocumentation: https://gitsy-56895.web.app\\n'"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "preferGlobal": true
+}
