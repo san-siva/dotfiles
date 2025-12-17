@@ -136,10 +136,6 @@ setup_custom_bins() {
         append_path "$HOME/.config/bin/dev/setup"
     fi
 
-    if [ -d "$HOME/.config/gitsy" ]; then
-        append_path "$HOME/.config/gitsy"
-    fi
-
     # Add custom project paths here if needed
     # Example:
     # if [ -d "$HOME/projects/custom-tools" ]; then

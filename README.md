@@ -46,7 +46,6 @@ Personal dotfiles and development environment configuration for macOS. Features 
 │   └── tsconfig.json            # TypeScript project config
 ├── alacritty/                   # Alacritty terminal config
 ├── fish/                        # Fish shell configuration
-├── gitsy/                       # Git workflow automation (submodule)
 ├── nvim/                        # Neovim configuration
 └── LICENSE                      # MIT License
 ```
@@ -55,16 +54,11 @@ Personal dotfiles and development environment configuration for macOS. Features 
 
 ### Quick Start
 
-1. **Clone this repository with submodules:**
+1. **Clone this repository:**
    ```bash
-   git clone --recursive https://github.com/san-siva/dotfiles.git ~/.config
+   git clone https://github.com/san-siva/dotfiles.git ~/.config
    cd ~/.config
    ```
-
-   > **Note:** The `--recursive` flag ensures the `gitsy` submodule is cloned. If you forget it:
-   > ```bash
-   > git submodule init && git submodule update
-   > ```
 
 2. **Create your `~/.zshrc` file:**
    ```bash
@@ -153,20 +147,13 @@ Located in `bin/dev/setup/`:
   - ESLint, Prettier, TypeScript, Jest (with all necessary plugins)
   - ripgrep, fzf, fd, zoxide, jq, yq
   - figlet, lolcat (for script banners)
+  - Gitsy (git workflow automation tools)
   - Symlinks ESLint configs globally to npm lib directory
   - Each function handles its own dependency checks
 
 - **`link-dotfiles`** - Create symlinks from `~/.config/configs/` to home directory
   - Links: `.tmux.conf`, `.vimrc`, `.prettierrc.json`, `.eslintrc.json`, `.p10k.zsh`
   - Links: `.gitconfig`, `.gitconfig__wrk`, `.ssh/config` (must be created from `.example` files first)
-
-### Git Workflow (Gitsy)
-
-Git automation tools in the `gitsy/` submodule. See `gitsy/README.md` for:
-- Branch checkout and creation
-- Worktree management
-- Stash operations
-- Remote synchronization
 
 ## Configuration Files
 
@@ -352,6 +339,11 @@ adb-uninstall --target=com.myapp.debug
 
 ### Git Workflows (Gitsy)
 
+Gitsy is automatically installed by the `install-global-deps` script. If not already installed, run:
+```bash
+npm install -g @san-siva/gitsy
+```
+
 **Checkout to a branch:**
 ```bash
 g-co --target-branch=feature/new-feature --stash-changes
@@ -367,7 +359,13 @@ g-wa --target-branch=hotfix/critical --path=../hotfix-worktree
 g-wr --target-branch=feature/old-feature
 ```
 
-See `gitsy/README.md` for complete documentation.
+**Compare branches with diff:**
+```bash
+g-diff --target-branch=main              # Show stat summary
+g-diff --target-branch=main --full       # Show full diff with colors
+```
+
+See the [Gitsy npm package](https://www.npmjs.com/package/@san-siva/gitsy) for complete documentation.
 
 ## Requirements
 

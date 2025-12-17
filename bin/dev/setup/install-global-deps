@@ -66,6 +66,10 @@ install_npm_global_deps() {
 			local-ssl-proxy \
 			neovim
 
+		# Git Workflow Tools
+		npm install -g \
+			@san-siva/gitsy
+
 		# Claude Code
 		npm install -g \
 			@anthropic-ai/claude-code
