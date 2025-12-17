@@ -18,8 +18,7 @@ main() {
 		exit 1
 	fi
 	echo "$current_branch_name" | indent
-	pbcopy <<<"$current_branch_name"
-	print_message "${GREEN}Current branch name copied to clipboard.${NC}"
+	copy_to_clipboard "$current_branch_name" "Current branch name copied to clipboard."
 }
 
 main "$@"

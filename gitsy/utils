@@ -448,3 +448,17 @@ branch_exists_on_remote() {
 	fi
 	return 1
 }
+
+copy_to_clipboard() {
+	local content="$1"
+	local message="$2"
+
+	if [ -n "$content" ]; then
+		# Strip all ANSI escape sequences: colors, character sets, etc.
+		printf '%s' "$content" | sed -E $'s/\033(\\[[0-9;]*[a-zA-Z]|\\([0-9A-B])//g' | pbcopy
+	fi
+
+	if [ -n "$message" ]; then
+		print_message "${GREEN}${message}${NC}"
+	fi
+}

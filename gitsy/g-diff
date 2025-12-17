@@ -128,23 +128,15 @@ has_changes() {
 	! git diff --quiet "${source_branch}..origin/${target_branch}" 2>&1
 }
 
-copy_to_clipboard() {
-	local content="$1"
-	local message="$2"
-
-	if [ -n "$content" ]; then
-		pbcopy <<<"$content"
-		print_message "${GREEN}${message}${NC}"
-	fi
-}
-
 show_full_diff() {
 	if has_changes; then
-		format_diff_output | indent
+		# Capture and display formatted output
+		local formatted_output=$(format_diff_output)
+		echo "$formatted_output" | indent
 
-		# Copy full diff to clipboard
-		local full_diff_content=$(git diff "${source_branch}..origin/${target_branch}")
-		copy_to_clipboard "$full_diff_content" "Full diff copied to clipboard."
+		# Copy formatted output to clipboard (strip color codes)
+		local clipboard_content=$(sed $'s/\033\[[0-9;]*m//g' <<< "${formatted_output}")
+		copy_to_clipboard "$clipboard_content" "Formatted diff copied to clipboard."
 	else
 		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
 	fi
