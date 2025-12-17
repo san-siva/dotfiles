@@ -10,6 +10,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/utils"
 
 target_branch=""
 source_branch=""
+full_diff=false
 
 set_flags() {
 	while [ $# -gt 0 ]; do
@@ -23,12 +24,16 @@ set_flags() {
 			echo "-h, --help                show brief help"
 			echo "-t, --target-branch=BRANCH    specify the target branch"
 			echo "-s, --source-branch=BRANCH    specify the source branch (defaults to current branch)"
+			echo "-f, --full                show full diff and copy to clipboard"
 			exit 0
+			;;
+		-f | --full)
+			full_diff=true
 			;;
 		-t=* | --target-branch=*)
 			target_branch="${1#*=}"
 			if [ -z "$target_branch" ]; then
-				echo "${RED}Error: No target branch specified.${NC}"
+				print_message "${RED}Error: No target branch specified.${NC}"
 				exit 1
 			fi
 			;;
@@ -37,14 +42,14 @@ set_flags() {
 			if [ $# -gt 0 ]; then
 				target_branch="$1"
 			else
-				echo "${RED}Error: No target branch specified.${NC}"
+				print_message "${RED}Error: No target branch specified.${NC}"
 				exit 1
 			fi
 			;;
 		-s=* | --source-branch=*)
 			source_branch="${1#*=}"
 			if [ -z "$source_branch" ]; then
-				echo "${RED}Error: No source branch specified.${NC}"
+				print_message "${RED}Error: No source branch specified.${NC}"
 				exit 1
 			fi
 			;;
@@ -53,17 +58,115 @@ set_flags() {
 			if [ $# -gt 0 ]; then
 				source_branch="$1"
 			else
-				echo "${RED}Error: No source branch specified.${NC}"
+				print_message "${RED}Error: No source branch specified.${NC}"
 				exit 1
 			fi
 			;;
 		*)
-			echo "${RED}Unknown option:${NC} $1"
+			print_message "${RED}Unknown option:${NC} $1"
 			exit 1
 			;;
 		esac
 		shift
 	done
+}
+
+format_diff_output() {
+	echo ""
+	local current_file=""
+	local in_hunk=false
+	local skip_next_line=false
+
+	# Process git diff output line by line
+	git diff "${source_branch}..origin/${target_branch}" | while IFS= read -r line; do
+		if [[ "$line" =~ ^diff\ --git\ a/(.+)\ b/(.+)$ ]]; then
+			# New file section
+			if [ -n "$current_file" ]; then
+				echo ""
+			fi
+			current_file="${BASH_REMATCH[1]}"
+			echo "${BLUE}file:${NC} ${current_file}"
+
+			# Get stats for this file
+			local adds=$(git diff --numstat "${source_branch}..origin/${target_branch}" -- "$current_file" | awk '{print $1}')
+			local dels=$(git diff --numstat "${source_branch}..origin/${target_branch}" -- "$current_file" | awk '{print $2}')
+			if [ -n "$adds" ] && [ -n "$dels" ]; then
+				echo "${BLUE}stats:${NC} ${GREEN}+${adds}${NC} ${RED}-${dels}${NC}"
+			fi
+			echo "${BLUE}changes:${NC}"
+			echo ""
+			in_hunk=false
+		elif [[ "$line" =~ ^index\ .* ]]; then
+			# Skip index line
+			continue
+		elif [[ "$line" =~ ^---\  ]]; then
+			# Skip --- line
+			continue
+		elif [[ "$line" =~ ^\+\+\+\  ]]; then
+			# Skip +++ line
+			continue
+		elif [[ "$line" =~ ^@@ ]]; then
+			# Hunk header
+			in_hunk=true
+			echo "   ${line}"
+		elif $in_hunk; then
+			# Inside a hunk, show the actual changes
+			# Colorize the line
+			if [[ "$line" =~ ^\+ ]]; then
+				echo "   ${GREEN}${line}${NC}"
+			elif [[ "$line" =~ ^- ]]; then
+				echo "   ${RED}${line}${NC}"
+			else
+				echo "   ${line}"
+			fi
+		fi
+	done
+	echo ""
+}
+
+has_changes() {
+	! git diff --quiet "${source_branch}..origin/${target_branch}" 2>&1
+}
+
+copy_to_clipboard() {
+	local content="$1"
+	local message="$2"
+
+	if [ -n "$content" ]; then
+		pbcopy <<<"$content"
+		print_message "${GREEN}${message}${NC}"
+	fi
+}
+
+show_full_diff() {
+	if has_changes; then
+		format_diff_output | indent
+
+		# Copy full diff to clipboard
+		local full_diff_content=$(git diff "${source_branch}..origin/${target_branch}")
+		copy_to_clipboard "$full_diff_content" "Full diff copied to clipboard."
+	else
+		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
+	fi
+}
+
+show_stat_summary() {
+	local result
+	if ! result=$(git -c color.ui=always diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
+		echo "$result" | indent
+		print_message "${RED}Failed to compare branches.${NC}"
+		exit 1
+	fi
+
+	if [ -n "$result" ]; then
+		echo "$result" | indent
+
+		# Get full filenames for clipboard
+		local filenames=$(git diff --name-only "${source_branch}..origin/${target_branch}")
+		copy_to_clipboard "$filenames" "Full file paths copied to clipboard."
+	else
+		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
+	fi
 }
 
 compare_branches() {
@@ -88,24 +191,12 @@ compare_branches() {
 	step_number=$((step_number + 1))
 	print_message "${BLUE}Comparing ${NC}${source_branch}${BLUE} with ${NC}${target_branch}${BLUE}...${NC}" $step_number
 
-	if ! result=$(git -c color.ui=always diff --stat "${source_branch}..origin/${target_branch}" 2>&1); then
-		echo "$result" | indent
-		print_message "${RED}Failed to compare branches.${NC}"
-		exit 1
+	if [ "$full_diff" = true ]; then
+		show_full_diff
+		return 0
 	fi
 
-	if [ -n "$result" ]; then
-		echo "$result" | indent
-
-		# Get full filenames for clipboard
-		filenames=$(git -c color.ui=always diff --name-only "${source_branch}..origin/${target_branch}")
-		if [ -n "$filenames" ]; then
-			print_message "${GREEN}Full file paths copied to clipboard.${NC}"
-			pbcopy <<<"$filenames"
-		fi
-	else
-		print_message "${BLUE}No changes found between ${NC}${source_branch}${BLUE} and ${NC}${target_branch}${BLUE}.${NC}"
-	fi
+	show_stat_summary
 }
 
 main() {
@@ -118,4 +209,3 @@ main() {
 
 main "$@"
 exit 0
-
