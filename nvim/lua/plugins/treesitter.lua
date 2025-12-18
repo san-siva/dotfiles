@@ -46,19 +46,6 @@ local config = {
     },
   },
   textobjects = {
-    select = {
-      enable = false,
-      lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-      keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        -- ['aa'] = '@parameter.outer',
-        -- ['ia'] = '@parameter.inner',
-        -- ['cl'] = '@function.outer',
-        -- ['ci'] = '@function.inner',
-        -- ['ac'] = '@class.outer',
-        -- ['ic'] = '@class.inner',
-      },
-    },
     move = {
       enable = true,
       set_jumps = true, -- whether to set jumps in the jumplist
@@ -86,15 +73,6 @@ local config = {
         ['[B'] = '@block.outer',
         ['[P'] = '@parameter.outer',
       },
-    },
-    swap = {
-      enable = false,
-      -- swap_next = {
-      --   ['<leader>a'] = '@parameter.inner',
-      -- },
-      -- swap_previous = {
-      --   ['<leader>A'] = '@parameter.inner',
-      -- },
     },
   },
 }
