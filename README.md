@@ -172,7 +172,6 @@ All configs are located in `configs/` and automatically linked to your home dire
   - Update signing key path to match your SSH key location
   - **URL rewriting**: Automatically rewrites GitHub URLs to use `github-wrk` SSH alias
     - `git@github.com:` → `git@github-wrk:` (for all work repos)
-    - `git@github-nexthink:` → `git@github-wrk:` (for org-specific URLs)
     - Only applies to repos under the work directory path specified in `.gitconfig`
 
 > **Privacy Note:** The actual `.gitconfig` and `.gitconfig__wrk` files are gitignored to prevent exposing personal email addresses in the repository. Always use the `.example` files as templates.
