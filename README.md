@@ -189,6 +189,23 @@ All configs are located in `configs/` and automatically linked to your home dire
     - All GitHub URLs in work repos automatically use `github-wrk` alias
     - Ensures correct SSH key is used for authentication and commit signing
 
+**Example `~/.ssh/config`:**
+```ssh
+Host github
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa_personal
+    IdentitiesOnly no
+
+Host github-wrk
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa_work
+    IdentitiesOnly yes
+```
+
+This configuration allows you to use different SSH keys for personal and work GitHub accounts. The `github-wrk` alias is automatically used for all repositories under your work directory (as configured in `.gitconfig`) via URL rewriting.
+
 > **Privacy Note:** The actual `ssh_config` file is gitignored to protect your SSH key paths from being exposed in the repository. Always use the `.example` file as a template.
 
 ### Shell Configuration
