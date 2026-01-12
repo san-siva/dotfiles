@@ -164,9 +164,6 @@ setup_ssh_agent() {
 }
 
 setup_aliases() {
-    # Git aliases
-    alias g-wl="git worktree list"
-
     # Tool aliases
     alias sed='gsed'
     alias gcs='gh copilot suggest'
