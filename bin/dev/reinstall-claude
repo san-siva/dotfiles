@@ -13,6 +13,44 @@ get_claude_dir() {
 	echo "$claude_dir"
 }
 
+stop_claude_processes() {
+	local pids=$(pgrep -x claude 2>/dev/null)
+	if [ -z "$pids" ]; then
+		print_message "${YELLOW}No Claude processes found${NC}" 0
+		return 0
+	fi
+
+	local count=$(echo "$pids" | wc -l | tr -d ' ')
+	print_message "${YELLOW}Found $count Claude process(es) running${NC}" 0
+	echo -e "${YELLOW}Stopping Claude is required to proceed with reinstallation.${NC}"
+	read -p "Do you want to stop all Claude processes? (y/n): " -n 1 -r
+	echo
+
+	if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+		print_message "${RED}User cancelled. Cannot proceed with reinstallation.${NC}" 0
+		exit 1
+	fi
+
+	print_message "${BLUE}Stopping Claude processes...${NC}" 1
+	pkill -x claude 2>/dev/null
+	sleep 1
+
+	# Check if any processes are still running
+	if pgrep -x claude >/dev/null 2>&1; then
+		print_message "${YELLOW}Force killing remaining Claude processes...${NC}" 0
+		pkill -9 -x claude 2>/dev/null
+		sleep 1
+	fi
+
+	if ! pgrep -x claude >/dev/null 2>&1; then
+		print_message "${GREEN}All Claude processes stopped${NC}" 2
+		return 0
+	else
+		print_message "${RED}Failed to stop all Claude processes${NC}" 0
+		return 1
+	fi
+}
+
 clear_npm_cache() {
 	if (npm cache clean --force >/dev/null 2>&1); then
 		print_message "${GREEN}Cleared npm cache${NC}" 2
@@ -62,6 +100,9 @@ try_installing_claude() {
 main() {
 	validate_dependencies figlet lolcat
 	print_banner
+
+	print_message "${BLUE}Stopping Claude processes...${NC}" 0
+	stop_claude_processes
 
 	print_message "${BLUE}Clearing npm cache...${NC}" 1
 	clear_npm_cache
