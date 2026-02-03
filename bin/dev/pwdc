@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Description: Print current directory and copy to clipboard
+
+current_dir=$(pwd)
+echo "$current_dir"
+echo "$current_dir" | pbcopy
