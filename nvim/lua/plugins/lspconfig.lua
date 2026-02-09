@@ -25,6 +25,17 @@ end
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
   callback = function(event)
+    -- Skip LSP for large files (> 1MB)
+    local fname = vim.api.nvim_buf_get_name(event.buf)
+    local stat = vim.loop.fs_stat(fname)
+    if stat and stat.size > 1024 * 1024 then
+      vim.schedule(function()
+        vim.lsp.buf_detach_client(event.buf, event.data.client_id)
+        vim.notify('LSP disabled for large file: ' .. vim.fn.fnamemodify(fname, ':t'), vim.log.levels.WARN)
+      end)
+      return
+    end
+
     -- NOTE: Remember that Lua is a real programming language, and as such it is possible
     -- to define small helper and utility functions so you don't have to repeat yourself.
     --
@@ -198,10 +209,67 @@ local servers = {
     end,
   },
   ts_ls = {
-    root_dir = lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git'),
+    -- Smart root_dir for monorepos: prefer package-level tsconfig
+    root_dir = function(fname)
+      -- First, try to find a package-specific tsconfig (closest to the file)
+      local package_tsconfig = lspconfig_util.root_pattern(
+        'tsconfig.src.json',
+        'tsconfig.json',
+        'jsconfig.json'
+      )(fname)
+
+      if package_tsconfig then
+        return package_tsconfig
+      end
+
+      -- Fallback to finding by package.json or git root
+      return lspconfig_util.root_pattern('package.json', '.git')(fname)
+    end,
+    single_file_support = false,
+    -- Filter out moduleResolution errors (TS2307 for packages with exports)
+    handlers = {
+      ['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
+        if result.diagnostics then
+          -- Filter out Cannot find module errors for packages with proper exports
+          result.diagnostics = vim.tbl_filter(function(diagnostic)
+            if diagnostic.code == 2307 then
+              local message = diagnostic.message or ''
+              -- Ignore if it mentions "but this result could not be resolved under your current 'moduleResolution' setting"
+              if message:match('moduleResolution.*setting') then
+                return false
+              end
+            end
+            return true
+          end, result.diagnostics)
+        end
+        vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
+      end,
+    },
     settings = {
       completions = {
         completeFunctionCalls = true,
+      },
+      typescript = {
+        inlayHints = {
+          includeInlayParameterNameHints = 'all',
+          includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+          includeInlayFunctionParameterTypeHints = true,
+          includeInlayVariableTypeHints = true,
+          includeInlayPropertyDeclarationTypeHints = true,
+          includeInlayFunctionLikeReturnTypeHints = true,
+          includeInlayEnumMemberValueHints = true,
+        },
+      },
+      javascript = {
+        inlayHints = {
+          includeInlayParameterNameHints = 'all',
+          includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+          includeInlayFunctionParameterTypeHints = true,
+          includeInlayVariableTypeHints = true,
+          includeInlayPropertyDeclarationTypeHints = true,
+          includeInlayFunctionLikeReturnTypeHints = true,
+          includeInlayEnumMemberValueHints = true,
+        },
       },
       tsserver = {
         experimental = {
@@ -210,6 +278,7 @@ local servers = {
         preferences = {
           includeCompletionsForModuleExports = true,
           includeCompletionsForImportStatements = true,
+          importModuleSpecifierPreference = 'non-relative',
         },
       },
     },
