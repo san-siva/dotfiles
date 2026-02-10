@@ -27,6 +27,18 @@ conform.formatters.yamllint = {
 conform.setup {
   notify_on_error = true,
   formatters_on_save = false,
+  -- Disable formatting for large files
+  format_on_save = function(bufnr)
+    local large_file = require('utils.large-file-check')
+    local filepath = vim.api.nvim_buf_get_name(bufnr)
+    if filepath ~= '' then
+      local is_large = large_file.is_large_file(filepath)
+      if is_large then
+        return nil
+      end
+    end
+    return { timeout_ms = 500, lsp_fallback = true }
+  end,
   formatters_by_ft = {
     yaml = { 'yamllint' },
     sh = { 'shfmt' },

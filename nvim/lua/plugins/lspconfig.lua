@@ -22,16 +22,31 @@ if not lspconfig_util_ok then
   return
 end
 
+-- Prevent LSP from attaching to large files
+local large_file = require('utils.large-file-check')
+
+vim.api.nvim_create_autocmd({ 'BufReadPre', 'FileType' }, {
+  group = vim.api.nvim_create_augroup('DisableLspForLargeFiles', { clear = true }),
+  callback = function(args)
+    local filepath = vim.api.nvim_buf_get_name(args.buf)
+    if filepath == '' then
+      return
+    end
+
+    local is_large, size = large_file.is_large_file(filepath)
+    if is_large then
+      vim.b[args.buf].large_file = true
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
   callback = function(event)
-    -- Skip LSP for large files (> 1MB)
-    local fname = vim.api.nvim_buf_get_name(event.buf)
-    local stat = vim.loop.fs_stat(fname)
-    if stat and stat.size > 1024 * 1024 then
+    -- Skip LSP for large files
+    if vim.b[event.buf].large_file then
       vim.schedule(function()
         vim.lsp.buf_detach_client(event.buf, event.data.client_id)
-        vim.notify('LSP disabled for large file: ' .. vim.fn.fnamemodify(fname, ':t'), vim.log.levels.WARN)
       end)
       return
     end
@@ -299,6 +314,45 @@ mason_lspconfig.setup {
     function(server_name)
       local server = servers[server_name] or {}
       server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+
+      -- Add on_attach wrapper to prevent LSP on large files
+      local original_on_attach = server.on_attach
+      server.on_attach = function(client, bufnr)
+        -- Check if buffer is marked as large file
+        if vim.b[bufnr].large_file then
+          -- Detach immediately
+          vim.schedule(function()
+            vim.lsp.buf_detach_client(bufnr, client.id)
+          end)
+          return false
+        end
+
+        -- Call original on_attach if it exists
+        if original_on_attach then
+          original_on_attach(client, bufnr)
+        end
+      end
+
+      -- Wrap root_dir to return nil for large files (prevents LSP from starting)
+      local original_root_dir = server.root_dir
+      server.root_dir = function(fname, ...)
+        -- Check if file is large
+        local is_large = large_file.is_large_file(fname)
+        if is_large then
+          return nil
+        end
+
+        -- Use original root_dir if provided, otherwise use lspconfig default
+        if original_root_dir then
+          return original_root_dir(fname, ...)
+        else
+          local default_config = lspconfig[server_name].document_config.default_config
+          if default_config and default_config.root_dir then
+            return default_config.root_dir(fname, ...)
+          end
+        end
+      end
+
       lspconfig[server_name].setup(server)
     end,
   },

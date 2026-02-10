@@ -115,6 +115,9 @@ vim.opt.listchars = {
 
 require 'bindings'
 
+-- Load large file handling BEFORE plugins
+require 'core.large-files'
+
 if vim.env.NVIM_NPM then
   vim.notify('Plugins disabled', 'warn', { title = 'nvim' })
   return

@@ -51,4 +51,14 @@ gitsigns.setup {
     row = 0,
     col = 1,
   },
+  -- Disable gitsigns for large files
+  on_attach = function(bufnr)
+    local large_file = require('utils.large-file-check')
+    local filepath = vim.api.nvim_buf_get_name(bufnr)
+    local is_large = large_file.is_large_file(filepath)
+    if is_large then
+      return false
+    end
+    return true
+  end,
 }

@@ -13,6 +13,18 @@ end
 luasnip.config.setup {}
 
 cmp.setup {
+  enabled = function()
+    -- Disable completion in large files
+    local large_file = require('utils.large-file-check')
+    local filepath = vim.api.nvim_buf_get_name(0)
+    if filepath ~= '' then
+      local is_large = large_file.is_large_file(filepath)
+      if is_large then
+        return false
+      end
+    end
+    return true
+  end,
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)

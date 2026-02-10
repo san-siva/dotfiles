@@ -78,3 +78,31 @@ local config = {
 }
 
 treesitter.setup(config)
+
+-- Disable treesitter for large files
+local large_file = require('utils.large-file-check')
+
+vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufRead' }, {
+  group = vim.api.nvim_create_augroup('DisableTreesitterForLargeFiles', { clear = true }),
+  callback = function(args)
+    local filepath = vim.api.nvim_buf_get_name(args.buf)
+    if filepath == '' then
+      return
+    end
+
+    local is_large, size = large_file.is_large_file(filepath)
+    if is_large then
+      -- Disable vim's built-in syntax highlighting
+      vim.bo[args.buf].syntax = 'off'
+      vim.bo[args.buf].swapfile = false
+      vim.bo[args.buf].undofile = false
+
+      -- Disable treesitter
+      vim.schedule(function()
+        pcall(vim.cmd, 'TSBufDisable highlight')
+        pcall(vim.cmd, 'TSBufDisable indent')
+        pcall(vim.cmd, 'TSBufDisable incremental_selection')
+      end)
+    end
+  end,
+})

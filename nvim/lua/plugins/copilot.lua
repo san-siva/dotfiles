@@ -41,3 +41,21 @@ vim.api.nvim_create_user_command('CopilotRestart', function()
 end, {})
 
 vim.keymap.set('n', '<leader>cr', ':CopilotRestart<CR>', { desc = '[C]opilot [R]estart' })
+
+-- Disable Copilot for large files
+local large_file = require('utils.large-file-check')
+
+vim.api.nvim_create_autocmd('BufReadPre', {
+  group = vim.api.nvim_create_augroup('DisableCopilotForLargeFiles', { clear = true }),
+  callback = function(args)
+    local filepath = vim.api.nvim_buf_get_name(args.buf)
+    if filepath == '' then
+      return
+    end
+
+    local is_large = large_file.is_large_file(filepath)
+    if is_large then
+      vim.b[args.buf].copilot_enabled = false
+    end
+  end,
+})
