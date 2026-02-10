@@ -14,6 +14,18 @@ luasnip.config.setup {}
 
 cmp.setup {
   enabled = function()
+    -- Disable in Telescope prompt
+    local buftype = vim.api.nvim_buf_get_option(0, 'buftype')
+    if buftype == 'prompt' then
+      return false
+    end
+
+    -- Disable in Telescope filetype
+    local filetype = vim.api.nvim_buf_get_option(0, 'filetype')
+    if filetype == 'TelescopePrompt' then
+      return false
+    end
+
     -- Disable completion in large files
     local large_file = require('utils.large-file-check')
     local filepath = vim.api.nvim_buf_get_name(0)

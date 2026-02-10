@@ -2,13 +2,31 @@ local Module = {}
 
 Module.size_threshold = 1024 * 1024
 
----Check if a file is large based on its size
+-- Files to always treat as large regardless of size
+Module.force_large_patterns = {
+  'package%-lock%.json$',
+  'yarn%.lock$',
+  'pnpm%-lock%.yaml$',
+  '%.min%.js$',
+  '%.min%.css$',
+}
+
+---Check if a file is large based on its size or patterns
 ---@param filepath string The path to the file to check
 ---@param threshold? number Optional size threshold in bytes (defaults to 1MB)
----@return boolean is_large True if file size exceeds threshold
+---@return boolean is_large True if file size exceeds threshold or matches patterns
 ---@return number|nil size File size in bytes, or nil if file doesn't exist
 function Module.is_large_file(filepath, threshold)
   threshold = threshold or Module.size_threshold
+
+  -- Check if filename matches force-large patterns
+  local filename = vim.fn.fnamemodify(filepath, ':t')
+  for _, pattern in ipairs(Module.force_large_patterns) do
+    if filename:match(pattern) then
+      local stat = vim.loop.fs_stat(filepath)
+      return true, stat and stat.size or 0
+    end
+  end
 
   local stat = vim.loop.fs_stat(filepath)
   if not stat then

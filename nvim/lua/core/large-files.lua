@@ -4,11 +4,17 @@ local Module = {}
 local large_file = require 'utils.large-file-check'
 
 -- Mark large files early to prevent plugins from attaching
-vim.api.nvim_create_autocmd('BufReadPre', {
+vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile', 'BufNew' }, {
   group = vim.api.nvim_create_augroup('LargeFileDetection', { clear = true }),
   callback = function(args)
     local filepath = vim.api.nvim_buf_get_name(args.buf)
     if filepath == '' then
+      return
+    end
+
+    -- Skip fugitive and special buffers
+    local buftype = vim.bo[args.buf].buftype
+    if buftype ~= '' and buftype ~= 'acwrite' then
       return
     end
 
@@ -34,23 +40,18 @@ vim.api.nvim_create_autocmd('BufReadPost', {
       vim.bo[bufnr].undofile = false
       vim.bo[bufnr].undolevels = -1
 
-      -- Aggressively disable syntax
+      -- Disable syntax for this buffer only
       vim.bo[bufnr].syntax = 'off'
-      vim.cmd 'syntax off'
-      vim.cmd 'syntax clear'
 
       -- Limit syntax highlighting column
       vim.bo[bufnr].synmaxcol = 0
 
-      -- Disable treesitter immediately
+      -- Disable treesitter for this buffer
       vim.schedule(function()
         pcall(vim.cmd, 'TSBufDisable highlight')
         pcall(vim.cmd, 'TSBufDisable indent')
         pcall(vim.cmd, 'TSBufDisable incremental_selection')
       end)
-
-      -- Disable matchparen (bracket matching)
-      vim.g.loaded_matchparen = 1
 
       vim.notify(string.format('Large file (%s). Features disabled for performance.', large_file.format_size(size)), vim.log.levels.WARN)
     end
