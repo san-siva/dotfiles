@@ -1,3 +1,4 @@
+
 local mason_ok, mason = pcall(require, 'mason')
 if not mason_ok then
   vim.notify 'Problem with mason'
@@ -23,7 +24,7 @@ if not lspconfig_util_ok then
 end
 
 -- Prevent LSP from attaching to large files
-local large_file = require('utils.large-file-check')
+local large_file = require 'utils.large-file-check'
 
 vim.api.nvim_create_autocmd({ 'BufReadPre', 'FileType' }, {
   group = vim.api.nvim_create_augroup('DisableLspForLargeFiles', { clear = true }),
@@ -224,42 +225,46 @@ local servers = {
     end,
   },
   ts_ls = {
-    -- Smart root_dir for monorepos: prefer package-level tsconfig
+    -- For monorepos: prioritize root with both tsconfig.json AND node_modules
     root_dir = function(fname)
-      -- First, try to find a package-specific tsconfig (closest to the file)
-      local package_tsconfig = lspconfig_util.root_pattern(
-        'tsconfig.src.json',
-        'tsconfig.json',
-        'jsconfig.json'
-      )(fname)
-
-      if package_tsconfig then
-        return package_tsconfig
+      -- Handle new vim.lsp.config API which might pass bufnr as first arg
+      if type(fname) == 'number' then
+        fname = vim.api.nvim_buf_get_name(fname)
       end
 
-      -- Fallback to finding by package.json or git root
-      return lspconfig_util.root_pattern('package.json', '.git')(fname)
+
+      if not fname or fname == '' then
+        return nil
+      end
+
+      -- Walk up from the file to find a directory with both tsconfig.json and node_modules
+      -- This works for any monorepo structure (packages/, apps/, modules/, etc.)
+      local current = lspconfig_util.path.dirname(fname)
+      local found_root = nil
+      local max_depth = 50
+      local depth = 0
+
+      while current and current ~= '/' and depth < max_depth do
+        local tsconfig_path = current .. '/tsconfig.json'
+        local node_modules_path = current .. '/node_modules'
+
+        local has_tsconfig = vim.loop.fs_stat(tsconfig_path)
+        local has_node_modules = vim.loop.fs_stat(node_modules_path)
+
+        -- If we find both, save it and keep going up to find the topmost one
+        if has_tsconfig and has_node_modules then
+          found_root = current
+          -- Don't break - keep going up to find the topmost directory with both files
+        end
+
+        current = lspconfig_util.path.dirname(current)
+        depth = depth + 1
+      end
+
+      -- Return the monorepo root if found, otherwise fall back to standard pattern
+      return found_root or lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname)
     end,
     single_file_support = false,
-    -- Filter out moduleResolution errors (TS2307 for packages with exports)
-    handlers = {
-      ['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
-        if result.diagnostics then
-          -- Filter out Cannot find module errors for packages with proper exports
-          result.diagnostics = vim.tbl_filter(function(diagnostic)
-            if diagnostic.code == 2307 then
-              local message = diagnostic.message or ''
-              -- Ignore if it mentions "but this result could not be resolved under your current 'moduleResolution' setting"
-              if message:match('moduleResolution.*setting') then
-                return false
-              end
-            end
-            return true
-          end, result.diagnostics)
-        end
-        vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, config)
-      end,
-    },
     settings = {
       completions = {
         completeFunctionCalls = true,
@@ -307,11 +312,16 @@ local servers = {
 
 mason.setup()
 
+
+-- Check what servers are already installed
+local installed = mason_lspconfig.get_installed_servers()
+
 mason_lspconfig.setup {
   ensure_installed = { 'gopls', 'basedpyright', 'eslint', 'ts_ls', 'lua_ls', 'bashls', 'tailwindcss' },
   automatic_installation = true,
   handlers = {
     function(server_name)
+
       local server = servers[server_name] or {}
       server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
 
@@ -357,3 +367,33 @@ mason_lspconfig.setup {
     end,
   },
 }
+
+-- Configure ts_ls directly (handlers only run during installation)
+local ts_ls_config = servers['ts_ls'] or {}
+ts_ls_config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, ts_ls_config.capabilities or {})
+
+-- Wrap root_dir for large files
+local original_ts_ls_root_dir = ts_ls_config.root_dir
+ts_ls_config.root_dir = function(fname, ...)
+
+  -- Check if file is large
+  local is_large = large_file.is_large_file(fname)
+  if is_large then
+    return nil
+  end
+
+  -- Use custom root_dir
+  if original_ts_ls_root_dir then
+    return original_ts_ls_root_dir(fname, ...)
+  else
+    return lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname)
+  end
+end
+
+-- Use new vim.lsp.config API (nvim 0.11+) to avoid deprecation warning
+if vim.lsp.config then
+  vim.lsp.config('ts_ls', ts_ls_config)
+else
+  -- Fallback to old API for older Neovim versions
+  lspconfig.ts_ls.setup(ts_ls_config)
+end
