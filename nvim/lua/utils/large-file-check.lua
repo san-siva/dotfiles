@@ -19,21 +19,28 @@ Module.force_large_patterns = {
 function Module.is_large_file(filepath, threshold)
   threshold = threshold or Module.size_threshold
 
-  -- Check if filename matches force-large patterns
-  local filename = vim.fn.fnamemodify(filepath, ':t')
-  for _, pattern in ipairs(Module.force_large_patterns) do
-    if filename:match(pattern) then
-      local stat = vim.loop.fs_stat(filepath)
-      return true, stat and stat.size or 0
-    end
-  end
-
+  -- Get file stats first
   local stat = vim.loop.fs_stat(filepath)
   if not stat then
     return false, nil
   end
 
   local size = stat.size
+
+  -- Don't mark empty or non-existent files as large
+  if size == 0 then
+    return false, 0
+  end
+
+  -- Check if filename matches force-large patterns
+  local filename = vim.fn.fnamemodify(filepath, ':t')
+  for _, pattern in ipairs(Module.force_large_patterns) do
+    if filename:match(pattern) then
+      return true, size
+    end
+  end
+
+  -- Check size threshold
   return size > threshold, size
 end
 

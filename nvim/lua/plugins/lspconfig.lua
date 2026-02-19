@@ -1,4 +1,8 @@
+-- ============================================================================
+-- LSP Configuration
+-- ============================================================================
 
+-- Load required modules
 local mason_ok, mason = pcall(require, 'mason')
 if not mason_ok then
   vim.notify 'Problem with mason'
@@ -23,9 +27,134 @@ if not lspconfig_util_ok then
   return
 end
 
--- Prevent LSP from attaching to large files
 local large_file = require 'utils.large-file-check'
 
+-- ============================================================================
+-- Helper Functions
+-- ============================================================================
+
+--- Convert buffer number to file path if needed
+---@param fname string|number File path or buffer number
+---@return string|nil File path or nil if invalid
+local function normalize_filename(fname)
+  if type(fname) == 'number' then
+    fname = vim.api.nvim_buf_get_name(fname)
+  end
+
+  if not fname or fname == '' then
+    return nil
+  end
+
+  return fname
+end
+
+--- Find monorepo root by walking up directory tree
+--- Looks for topmost directory with both tsconfig.json and node_modules
+---@param fname string File path
+---@return string|nil Monorepo root path or nil
+local function find_monorepo_root(fname)
+  local current = lspconfig_util.path.dirname(fname)
+  local found_root = nil
+  local max_depth = 50
+  local depth = 0
+
+  while current and current ~= '/' and depth < max_depth do
+    local tsconfig_path = current .. '/tsconfig.json'
+    local node_modules_path = current .. '/node_modules'
+
+    local has_tsconfig = vim.loop.fs_stat(tsconfig_path)
+    local has_node_modules = vim.loop.fs_stat(node_modules_path)
+
+    -- If we find both, save it and keep going up to find the topmost one
+    if has_tsconfig and has_node_modules then
+      found_root = current
+    end
+
+    current = lspconfig_util.path.dirname(current)
+    depth = depth + 1
+  end
+
+  return found_root
+end
+
+--- Create a root_dir function for ts_ls that finds monorepo root
+---@return function root_dir function
+local function create_ts_ls_root_dir()
+  return function(fname)
+    fname = normalize_filename(fname)
+    if not fname then
+      return nil
+    end
+
+    -- Try to find monorepo root first
+    local monorepo_root = find_monorepo_root(fname)
+    if monorepo_root then
+      return monorepo_root
+    end
+
+    -- Fall back to standard pattern
+    return lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname)
+  end
+end
+
+--- Wrap a root_dir function to check for large files
+---@param original_root_dir function|nil Original root_dir function
+---@param server_name string Server name for fallback
+---@return function Wrapped root_dir function
+local function wrap_root_dir_for_large_files(original_root_dir, server_name)
+  return function(fname, ...)
+    fname = normalize_filename(fname)
+    if not fname then
+      return nil
+    end
+
+    -- Check if file is large
+    local is_large = large_file.is_large_file(fname)
+    if is_large then
+      return nil
+    end
+
+    -- Use original root_dir if provided
+    if original_root_dir then
+      return original_root_dir(fname, ...)
+    end
+
+    -- Fallback to lspconfig default
+    local default_config = lspconfig[server_name].document_config.default_config
+    if default_config and default_config.root_dir then
+      return default_config.root_dir(fname, ...)
+    end
+
+    return nil
+  end
+end
+
+--- Wrap an on_attach function to check for large files
+---@param original_on_attach function|nil Original on_attach function
+---@return function Wrapped on_attach function
+local function wrap_on_attach_for_large_files(original_on_attach)
+  return function(client, bufnr)
+    -- Check if buffer is marked as large file
+    if vim.b[bufnr].large_file then
+      -- Detach immediately
+      vim.schedule(function()
+        vim.lsp.buf_detach_client(bufnr, client.id)
+      end)
+      return false
+    end
+
+    -- Call original on_attach if it exists
+    if original_on_attach then
+      original_on_attach(client, bufnr)
+    end
+  end
+end
+
+-- ============================================================================
+-- Autocommands for Large Files
+-- ============================================================================
+
+-- Mark large files early to prevent LSP from attaching
 vim.api.nvim_create_autocmd({ 'BufReadPre', 'FileType' }, {
   group = vim.api.nvim_create_augroup('DisableLspForLargeFiles', { clear = true }),
   callback = function(args)
@@ -41,6 +170,7 @@ vim.api.nvim_create_autocmd({ 'BufReadPre', 'FileType' }, {
   end,
 })
 
+-- Detach LSP from large files and setup keymaps
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
   callback = function(event)
@@ -52,56 +182,25 @@ vim.api.nvim_create_autocmd('LspAttach', {
       return
     end
 
-    -- NOTE: Remember that Lua is a real programming language, and as such it is possible
-    -- to define small helper and utility functions so you don't have to repeat yourself.
-    --
-    -- In this case, we create a function that lets us more easily define mappings specific
-    -- for LSP related items. It sets the mode, buffer and description for us each time.
+    -- Setup LSP keymaps
     local map = function(keys, func, desc)
       vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
     end
 
-    -- Jump to the definition of the word under your cursor.
-    --  This is where a variable was first declared, or where a function is defined, etc.
-    --  To jump back, press <C-t>.
     map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
-
-    -- Find references for the word under your cursor.
     map('<leader>fr', vim.lsp.buf.references, '[G]oto [R]eferences')
-
-    -- Jump to the implementation of the word under your cursor.
-    --  Useful when your language has ways of declaring types without an actual implementation.
     map('<leader>fi', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
-
-    -- Jump to the type of the word under your cursor.
-    --  Useful when you're not sure what type a variable is and you want to see
-    --  the definition of its *type*, not where it was *defined*.
     map('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
-
-    -- Rename the variable under your cursor.
-    --  Most Language Servers support renaming across files, etc.
     map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-
-    -- Execute a code action, usually your cursor needs to be on top of an error
-    -- or a suggestion from your LSP for this to activate.
     map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-
-    -- Opens a popup that displays documentation about the word under your cursor
-    --  See `:help K` for why this keymap.
     map('K', vim.lsp.buf.hover, 'Hover Documentation')
-
-    -- WARN: This is not Goto Definition, this is Goto Declaration.
-    --  For example, in C this would take you to the header.
     map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-    -- The following two autocommands are used to highlight references of the
-    -- word under your cursor when your cursor rests there for a little while.
-    --    See `:help CursorHold` for information about when this is executed
-    --
-    -- When you move your cursor, the highlights will be cleared (the second autocommand).
+    -- Setup document highlighting
     local client = vim.lsp.get_client_by_id(event.data.client_id)
     if client and client.server_capabilities.documentHighlightProvider then
       local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+
       vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
         buffer = event.buf,
         group = highlight_augroup,
@@ -125,23 +224,62 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
+-- ============================================================================
+-- Diagnostic Configuration
+-- ============================================================================
+
 vim.diagnostic.config {
   signs = {
     text = {
-      [vim.diagnostic.severity.ERROR] = ' ',
-      [vim.diagnostic.severity.WARN] = ' ',
-      [vim.diagnostic.severity.HINT] = ' ',
-      [vim.diagnostic.severity.INFO] = ' ',
+      [vim.diagnostic.severity.ERROR] = ' ',
+      [vim.diagnostic.severity.WARN] = ' ',
+      [vim.diagnostic.severity.HINT] = ' ',
+      [vim.diagnostic.severity.INFO] = ' ',
+    },
+    numhl = {
+      [vim.diagnostic.severity.ERROR] = 'DiagnosticSignError',
+      [vim.diagnostic.severity.WARN] = 'DiagnosticSignWarn',
+      [vim.diagnostic.severity.HINT] = 'DiagnosticSignHint',
+      [vim.diagnostic.severity.INFO] = 'DiagnosticSignInfo',
     },
   },
+  virtual_text = {
+    prefix = '●',
+    spacing = 4,
+  },
   severity_sort = true,
+  underline = true,
+  update_in_insert = false,
+  float = {
+    border = 'rounded',
+    source = true,
+  },
 }
+
+-- Toggle virtual text on/off
+vim.keymap.set('n', '<leader>dv', function()
+  local config = vim.diagnostic.config()
+  if config.virtual_text then
+    vim.diagnostic.config { virtual_text = false }
+    vim.notify('Virtual text disabled', vim.log.levels.INFO)
+  else
+    vim.diagnostic.config { virtual_text = { prefix = '●', spacing = 4 } }
+    vim.notify('Virtual text enabled', vim.log.levels.INFO)
+  end
+end, { desc = '[D]iagnostic [V]irtual text toggle' })
+
+-- ============================================================================
+-- LSP Capabilities
+-- ============================================================================
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+-- ============================================================================
+-- Server Configurations
+-- ============================================================================
+
 local servers = {
-  -- clangd = {},
   gopls = {
     settings = {
       gopls = {
@@ -188,8 +326,9 @@ local servers = {
       },
     },
   },
+
   basedpyright = {},
-  -- rust_analyzer = {},
+
   eslint = {
     command = { 'eslint', '--stdin' },
     filetypes = {
@@ -205,7 +344,7 @@ local servers = {
       args = { '--max-warnings=0', '--fix' },
       useFlatConfig = true,
       experimental = {
-        useFlatConfig = false, -- For ESLint >= 8.57.0
+        useFlatConfig = false,
       },
       workingDirectory = { mode = 'auto' },
     },
@@ -219,51 +358,13 @@ local servers = {
       'package.json',
       '.git'
     ),
-
     on_attach = function(client, bufnr)
       client.server_capabilities.documentFormattingProvider = true
     end,
   },
+
   ts_ls = {
-    -- For monorepos: prioritize root with both tsconfig.json AND node_modules
-    root_dir = function(fname)
-      -- Handle new vim.lsp.config API which might pass bufnr as first arg
-      if type(fname) == 'number' then
-        fname = vim.api.nvim_buf_get_name(fname)
-      end
-
-
-      if not fname or fname == '' then
-        return nil
-      end
-
-      -- Walk up from the file to find a directory with both tsconfig.json and node_modules
-      -- This works for any monorepo structure (packages/, apps/, modules/, etc.)
-      local current = lspconfig_util.path.dirname(fname)
-      local found_root = nil
-      local max_depth = 50
-      local depth = 0
-
-      while current and current ~= '/' and depth < max_depth do
-        local tsconfig_path = current .. '/tsconfig.json'
-        local node_modules_path = current .. '/node_modules'
-
-        local has_tsconfig = vim.loop.fs_stat(tsconfig_path)
-        local has_node_modules = vim.loop.fs_stat(node_modules_path)
-
-        -- If we find both, save it and keep going up to find the topmost one
-        if has_tsconfig and has_node_modules then
-          found_root = current
-          -- Don't break - keep going up to find the topmost directory with both files
-        end
-
-        current = lspconfig_util.path.dirname(current)
-        depth = depth + 1
-      end
-
-      -- Return the monorepo root if found, otherwise fall back to standard pattern
-      return found_root or lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname)
-    end,
+    root_dir = create_ts_ls_root_dir(),
     single_file_support = false,
     settings = {
       completions = {
@@ -303,97 +404,85 @@ local servers = {
       },
     },
   },
+
   lua_ls = {},
   bashls = {},
+
   tailwindcss = {
     filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'typescript', 'javascript' },
   },
 }
 
+-- ============================================================================
+-- Mason Setup
+-- ============================================================================
+
 mason.setup()
-
-
--- Check what servers are already installed
-local installed = mason_lspconfig.get_installed_servers()
 
 mason_lspconfig.setup {
   ensure_installed = { 'gopls', 'basedpyright', 'eslint', 'ts_ls', 'lua_ls', 'bashls', 'tailwindcss' },
   automatic_installation = true,
   handlers = {
+    -- Default handler for all servers
     function(server_name)
-
       local server = servers[server_name] or {}
+
+      -- Add capabilities
       server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
 
-      -- Add on_attach wrapper to prevent LSP on large files
-      local original_on_attach = server.on_attach
-      server.on_attach = function(client, bufnr)
-        -- Check if buffer is marked as large file
-        if vim.b[bufnr].large_file then
-          -- Detach immediately
-          vim.schedule(function()
-            vim.lsp.buf_detach_client(bufnr, client.id)
-          end)
-          return false
-        end
+      -- Wrap on_attach to handle large files
+      server.on_attach = wrap_on_attach_for_large_files(server.on_attach)
 
-        -- Call original on_attach if it exists
-        if original_on_attach then
-          original_on_attach(client, bufnr)
-        end
-      end
+      -- Wrap root_dir to handle large files
+      server.root_dir = wrap_root_dir_for_large_files(server.root_dir, server_name)
 
-      -- Wrap root_dir to return nil for large files (prevents LSP from starting)
-      local original_root_dir = server.root_dir
-      server.root_dir = function(fname, ...)
-        -- Check if file is large
-        local is_large = large_file.is_large_file(fname)
-        if is_large then
-          return nil
-        end
-
-        -- Use original root_dir if provided, otherwise use lspconfig default
-        if original_root_dir then
-          return original_root_dir(fname, ...)
-        else
-          local default_config = lspconfig[server_name].document_config.default_config
-          if default_config and default_config.root_dir then
-            return default_config.root_dir(fname, ...)
-          end
-        end
-      end
-
+      -- Setup the server
       lspconfig[server_name].setup(server)
     end,
   },
 }
 
--- Configure ts_ls directly (handlers only run during installation)
-local ts_ls_config = servers['ts_ls'] or {}
-ts_ls_config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, ts_ls_config.capabilities or {})
+-- ============================================================================
+-- ts_ls Special Configuration
+-- ============================================================================
+-- ts_ls needs to be configured separately because mason_lspconfig handlers
+-- only run during server installation, not on every startup
 
--- Wrap root_dir for large files
-local original_ts_ls_root_dir = ts_ls_config.root_dir
-ts_ls_config.root_dir = function(fname, ...)
+local function setup_ts_ls()
+  local config = servers['ts_ls'] or {}
 
-  -- Check if file is large
-  local is_large = large_file.is_large_file(fname)
-  if is_large then
-    return nil
-  end
+  -- Add capabilities
+  config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, config.capabilities or {})
 
-  -- Use custom root_dir
-  if original_ts_ls_root_dir then
-    return original_ts_ls_root_dir(fname, ...)
-  else
+  -- Wrap root_dir to handle large files
+  -- Note: config.root_dir already contains the monorepo logic from create_ts_ls_root_dir()
+  local original_root_dir = config.root_dir
+  config.root_dir = function(fname, ...)
+    fname = normalize_filename(fname)
+    if not fname then
+      return nil
+    end
+
+    -- Check if file is large
+    local is_large = large_file.is_large_file(fname)
+    if is_large then
+      return nil
+    end
+
+    -- Call the monorepo root_dir function
+    if original_root_dir then
+      return original_root_dir(fname, ...)
+    end
+
     return lspconfig_util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname)
   end
+
+  -- Suppress deprecation warning - lspconfig.setup() works correctly with
+  -- custom root_dir functions; the new vim.lsp.config API does not
+  local orig_warn = vim.deprecate
+  vim.deprecate = function() end
+  lspconfig.ts_ls.setup(config)
+  vim.deprecate = orig_warn
 end
 
--- Use new vim.lsp.config API (nvim 0.11+) to avoid deprecation warning
-if vim.lsp.config then
-  vim.lsp.config('ts_ls', ts_ls_config)
-else
-  -- Fallback to old API for older Neovim versions
-  lspconfig.ts_ls.setup(ts_ls_config)
-end
+setup_ts_ls()

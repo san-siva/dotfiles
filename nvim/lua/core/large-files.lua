@@ -4,7 +4,7 @@ local Module = {}
 local large_file = require 'utils.large-file-check'
 
 -- Mark large files early to prevent plugins from attaching
-vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile', 'BufNew' }, {
+vim.api.nvim_create_autocmd('BufReadPre', {
   group = vim.api.nvim_create_augroup('LargeFileDetection', { clear = true }),
   callback = function(args)
     local filepath = vim.api.nvim_buf_get_name(args.buf)
