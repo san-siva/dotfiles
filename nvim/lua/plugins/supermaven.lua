@@ -1,3 +1,6 @@
+-- Reset persisted stop-state from shada before setup runs
+vim.g.SUPERMAVEN_DISABLED = 0
+
 local supermaven_ok, supermaven = pcall(require, 'supermaven-nvim')
 if not supermaven_ok then
   vim.notify('Problem with supermaven: ' .. supermaven)
