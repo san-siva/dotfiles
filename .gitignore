@@ -50,3 +50,9 @@ JetBrainsMonoPatched/
 !gitsy/
 !alacritty/
 !fish/
+!website/
+
+# Website build artifacts
+website/.next/
+website/out/
+website/node_modules/
