@@ -1,0 +1,31 @@
+{
+	"name": "dotfiles-website",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbo",
+		"build": "next build",
+		"start": "next start",
+		"deploy": "npm run build && firebase deploy"
+	},
+	"dependencies": {
+		"@react-spring/web": "^10.0.3",
+		"@san-siva/blogkit": "^1.1.18",
+		"@san-siva/stylekit": "^1.0.7",
+		"mermaid": "^10.9.1",
+		"next": "^16.0.10",
+		"prismjs": "^1.29.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-syntax-highlighter": "^15.5.0",
+		"sass": "^1.95.1"
+	},
+	"devDependencies": {
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"eslint": "^9",
+		"eslint-config-next": "^16.0.10",
+		"typescript": "^5"
+	}
+}
