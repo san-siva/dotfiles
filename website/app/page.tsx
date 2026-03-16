@@ -768,16 +768,6 @@ const DotfilesDocumentation: NextPage = () => {
 					>
 						https://github.com/san-siva
 					</a>
-					<br />
-					<strong>Dotfiles repo:</strong>{' '}
-					<a
-						href="https://github.com/san-siva/dotfiles"
-						target="_blank"
-						rel="noopener noreferrer"
-						className={styles['a--highlighted']}
-					>
-						https://github.com/san-siva/dotfiles
-					</a>
 				</p>
 			</BlogSection>
 		</Blog>
