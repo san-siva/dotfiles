@@ -10,8 +10,8 @@
 	},
 	"dependencies": {
 		"@react-spring/web": "^10.0.3",
-		"@san-siva/blogkit": "^1.1.18",
-		"@san-siva/stylekit": "^1.0.7",
+		"@san-siva/blogkit": "^1.1.19",
+		"@san-siva/stylekit": "^1.0.8",
 		"mermaid": "^10.9.1",
 		"next": "^16.0.10",
 		"prismjs": "^1.29.0",

@@ -1,10 +1,1 @@
 @use '@san-siva/stylekit/styles/index.module.scss' as styles;
-
-.a--highlighted {
-	color: styles.$color--primary;
-	text-decoration: underline;
-
-	&:hover {
-		opacity: 0.8;
-	}
-}
