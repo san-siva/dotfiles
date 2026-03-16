@@ -757,7 +757,15 @@ const DotfilesDocumentation: NextPage = () => {
 
 			<BlogSection title="About">
 				<p>
-					<strong>Author:</strong> Santhosh Siva
+					<strong>Author:</strong>{' '}
+					<a
+						href="https://santhoshsiva.dev"
+						target="_blank"
+						rel="noopener noreferrer"
+						className={styles['a--highlighted']}
+					>
+						Santhosh Siva
+					</a>
 					<br />
 					<strong>GitHub:</strong>{' '}
 					<a
