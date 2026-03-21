@@ -67,7 +67,6 @@ vim.keymap.set('n', '<leader>f.', builtin.oldfiles, { desc = '[S]earch Recent Fi
 -- NOTE: Files
 vim.keymap.set('n', '<leader>ff', function()
   builtin.find_files {
-    file_ignore_patterns = {},
     no_ignore = false,
     hidden = true,
   }
