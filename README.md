@@ -1,3 +1,8 @@
+---
+title: dotfiles
+description: Personal macOS development environment — Neovim, terminal, shell, and tooling configuration.
+---
+
 # dotfiles
 
 Personal macOS development environment — Neovim, terminal, shell, and tooling configuration.
@@ -33,14 +38,14 @@ cp configs/ssh_config.example configs/ssh_config
 
 ## What's Included
 
-| Directory | Contents |
-|---|---|
-| `nvim/` | Full Neovim IDE config — LSP, treesitter, conform, telescope, supermaven |
-| `kitty/` | Kitty terminal — Catppuccin Frappé theme, JetBrainsMono NF |
-| `configs/` | Dotfiles: zsh, git, tmux, prettier, eslint, tsconfig, ssh |
-| `bin/` | Shell scripts — ADB utils, dev tools, setup scripts |
-| `git/` | Global gitconfig and gitignore |
-| `assets/` | Screenshot, patched fonts, Catppuccin zsh theme files |
+| Directory  | Contents                                                                 |
+| ---------- | ------------------------------------------------------------------------ |
+| `nvim/`    | Full Neovim IDE config — LSP, treesitter, conform, telescope, supermaven |
+| `kitty/`   | Kitty terminal — Catppuccin Frappé theme, JetBrainsMono NF               |
+| `configs/` | Dotfiles: zsh, git, tmux, prettier, eslint, tsconfig, ssh                |
+| `bin/`     | Shell scripts — ADB utils, dev tools, setup scripts                      |
+| `git/`     | Global gitconfig and gitignore                                           |
+| `assets/`  | Screenshot, patched fonts, Catppuccin zsh theme files                    |
 
 ## License
 
