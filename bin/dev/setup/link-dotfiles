@@ -45,6 +45,10 @@ main() {
 		rm -f ~/.gitconfig__wrk
 	fi
 
+	if [ -L ~/.gitignore__global ] || [ -f ~/.gitignore__global ]; then
+		rm -f ~/.gitignore__global
+	fi
+
 	if [ -L ~/.local/share/eclipse/eclipse-java-google-style.xml ] || [ -f ~/.local/share/eclipse/eclipse-java-google-style.xml ]; then
 		rm -f ~/.local/share/eclipse/eclipse-java-google-style.xml
 	fi
@@ -64,9 +68,12 @@ main() {
 	ln -s ~/.config/configs/.p10k.zsh ~/.p10k.zsh
 	ln -s ~/.config/configs/.gitconfig ~/.gitconfig
 	ln -s ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
+	ln -s ~/.config/configs/.gitignore__global ~/.gitignore__global
 	ln -s ~/.config/configs/ssh_config ~/.ssh/config
 	ln -s ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
 	ln -s ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
+
+	git config --global core.excludesfile ~/.gitignore__global
 
 	echo "Symlinks created successfully!"
 }

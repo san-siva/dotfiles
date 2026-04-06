@@ -408,6 +408,12 @@ local servers = {
   lua_ls = {},
   bashls = {},
 
+  clangd = {
+    cmd = { 'clangd', '--background-index', '--clang-tidy', '--header-insertion=iwyu' },
+    filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
+    root_dir = lspconfig_util.root_pattern('compile_commands.json', 'compile_flags.txt', '.git', 'CMakeLists.txt'),
+  },
+
   tailwindcss = {
     filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'typescript', 'javascript' },
   },
@@ -420,7 +426,7 @@ local servers = {
 mason.setup()
 
 mason_lspconfig.setup {
-  ensure_installed = { 'gopls', 'basedpyright', 'eslint', 'ts_ls', 'lua_ls', 'bashls', 'tailwindcss' },
+  ensure_installed = { 'gopls', 'basedpyright', 'eslint', 'ts_ls', 'lua_ls', 'bashls', 'tailwindcss', 'clangd' },
   automatic_installation = true,
   handlers = {
     -- Default handler for all servers
