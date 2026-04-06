@@ -100,3 +100,8 @@ build/
 *.bak
 *.orig
 *.rej
+
+# Temporary documentation files
+TASK*.md
+PROMPT*.md
+TODO*.md
