@@ -39,6 +39,8 @@ link_eclipse_configs() {
 	link ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
 }
 
+
+
 link_launch_agents() {
 	# Caps Lock <-> Left Control swap via hidutil
 	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
