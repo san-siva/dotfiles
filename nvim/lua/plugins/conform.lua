@@ -60,5 +60,7 @@ conform.setup {
     json = { 'prettier' },
     jsonc = { 'prettier' },
     xml = { 'xmllint' },
+    c = { 'clang-format' },
+    cpp = { 'clang-format' },
   },
 }

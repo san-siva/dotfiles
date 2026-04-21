@@ -334,11 +334,11 @@ main() {
 
 	echo ""
 	echo "Running install-global-deps..."
-	exec "~/.config/bin/dev/setup/install-global-deps"
+	bash ~/.config/bin/dev/setup/install-global-deps
 
 	echo ""
 	echo "Running link-dotfiles..."
-	exec "~/.config/bin/dev/setup/link-dotfiles"
+	bash ~/.config/bin/dev/setup/link-dotfiles
 }
 
 main "$@"

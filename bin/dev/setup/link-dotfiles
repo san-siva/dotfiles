@@ -6,67 +6,77 @@
 # Description:
 # This script creates symlinks for dotfiles from ~/.config to the home directory.
 
+link() {
+	local src=$1 dst=$2
+	[ -L "$dst" ] || [ -f "$dst" ] && rm -f "$dst"
+	ln -s "$src" "$dst"
+}
+
+link_shell_configs() {
+	link ~/.config/configs/.tmux.conf ~/.tmux.conf
+	link ~/.config/configs/.vimrc ~/.vimrc
+	link ~/.config/configs/.p10k.zsh ~/.p10k.zsh
+}
+
+link_editor_configs() {
+	link ~/.config/configs/.prettierrc.json ~/.prettierrc.json
+	link ~/.config/configs/.eslintrc.json ~/.eslintrc.json
+}
+
+link_git_configs() {
+	link ~/.config/configs/.gitconfig ~/.gitconfig
+	link ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
+	link ~/.config/configs/.gitignore__global ~/.gitignore__global
+	git config --global core.excludesfile ~/.gitignore__global
+}
+
+link_ssh_config() {
+	link ~/.config/configs/ssh_config ~/.ssh/config
+}
+
+link_eclipse_configs() {
+	link ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
+	link ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
+}
+
+
+
+install_keyremap_watcher() {
+	if ! command -v swiftc &>/dev/null; then
+		echo "swiftc not found — skipping keyremap-watcher (install Xcode Command Line Tools: xcode-select --install)"
+		return 1
+	fi
+	echo "Compiling keyremap-watcher..."
+	swiftc ~/.config/configs/keyremap-watcher.swift -framework IOKit -o ~/.config/configs/keyremap-watcher
+}
+
+link_launch_agents() {
+	# Caps Lock <-> Ctrl swap on Apple keyboards (global)
+	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
+	launchctl bootout "gui/$(id -u)/com.user.keyremap" 2>/dev/null
+	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
+
+	# Caps Lock -> Ctrl only on Logitech MX Keys Mini (event-driven via IOKit)
+	if install_keyremap_watcher; then
+		link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+		launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
+		launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+	fi
+}
+
+
 main() {
 	echo "Sankit"
 	echo ""
 	echo "Creating symlinks for dotfiles..."
 	echo ""
 
-	# removing existing config files (including broken symlinks)
-	if [ -L ~/.tmux.conf ] || [ -f ~/.tmux.conf ]; then
-		rm -f ~/.tmux.conf
-	fi
-
-	if [ -L ~/.vimrc ] || [ -f ~/.vimrc ]; then
-		rm -f ~/.vimrc
-	fi
-
-	if [ -L ~/.prettierrc.json ] || [ -f ~/.prettierrc.json ]; then
-		rm -f ~/.prettierrc.json
-	fi
-
-	if [ -L ~/.eslintrc.json ] || [ -f ~/.eslintrc.json ]; then
-		rm -f ~/.eslintrc.json
-	fi
-
-	if [ -L ~/.eslintrc.js ] || [ -f ~/.eslintrc.js ]; then
-		rm -f ~/.eslintrc.js
-	fi
-
-	if [ -L ~/.p10k.zsh ] || [ -f ~/.p10k.zsh ]; then
-		rm -f ~/.p10k.zsh
-	fi
-
-	if [ -L ~/.gitconfig ] || [ -f ~/.gitconfig ]; then
-		rm -f ~/.gitconfig
-	fi
-
-	if [ -L ~/.gitconfig__wrk ] || [ -f ~/.gitconfig__wrk ]; then
-		rm -f ~/.gitconfig__wrk
-	fi
-
-	if [ -L ~/.local/share/eclipse/eclipse-java-google-style.xml ] || [ -f ~/.local/share/eclipse/eclipse-java-google-style.xml ]; then
-		rm -f ~/.local/share/eclipse/eclipse-java-google-style.xml
-	fi
-
-	if [ -L ~/.local/share/eclipse/lombok.jar ] || [ -f ~/.local/share/eclipse/lombok.jar ]; then
-		rm -f ~/.local/share/eclipse/lombok.jar
-	fi
-
-	if [ -L ~/.ssh/config ] || [ -f ~/.ssh/config ]; then
-		rm -f ~/.ssh/config
-	fi
-
-	ln -s ~/.config/configs/.tmux.conf ~/.tmux.conf
-	ln -s ~/.config/configs/.vimrc ~/.vimrc
-	ln -s ~/.config/configs/.prettierrc.json ~/.prettierrc.json
-	ln -s ~/.config/configs/.eslintrc.json ~/.eslintrc.json
-	ln -s ~/.config/configs/.p10k.zsh ~/.p10k.zsh
-	ln -s ~/.config/configs/.gitconfig ~/.gitconfig
-	ln -s ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
-	ln -s ~/.config/configs/ssh_config ~/.ssh/config
-	ln -s ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
-	ln -s ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
+	link_shell_configs
+	link_editor_configs
+	link_git_configs
+	link_ssh_config
+	link_eclipse_configs
+	link_launch_agents
 
 	echo "Symlinks created successfully!"
 }

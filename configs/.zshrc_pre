@@ -1,7 +1,7 @@
 source $HOME/.config/assets/catppuccin_frappe-zsh-syntax-highlighting.zsh
 
 if [ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]
-then;
+then
   source ~/powerlevel10k/powerlevel10k.zsh-theme
 fi
 

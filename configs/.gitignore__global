@@ -1,0 +1,108 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Thumbnails
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor - JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Editor - VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Editor - Vim/Neovim
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+.nvimrc.local
+
+# Editor - Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+.envrc
+
+# Node
+node_modules/
+.npm/
+.pnp.*
+.yarn/cache
+.yarn/unplugged
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.Python
+dist/
+build/
+*.egg-info/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Compiled output
+*.o
+*.a
+*.so
+*.dylib
+*.out
+*.class
+*.jar
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# Temporary documentation files
+TASK*.md
+PROMPT*.md
+TODO*.md
+custom_bin/

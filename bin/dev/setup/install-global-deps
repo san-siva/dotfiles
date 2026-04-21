@@ -73,6 +73,10 @@ install_npm_global_deps() {
 		# Claude Code
 		npm install -g \
 			@anthropic-ai/claude-code
+
+		# MCP Servers
+		npm install -g \
+			chrome-devtools-mcp
 	else
 		echo "npm still not available after installation attempt"
 	fi

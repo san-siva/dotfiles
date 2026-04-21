@@ -117,7 +117,6 @@ setup_node_environment() {
     fi
 
     # Node configuration
-    export NODE_PATH=$(npm root -g)
     export NODE_OPTIONS="--use-system-ca"
 }
 

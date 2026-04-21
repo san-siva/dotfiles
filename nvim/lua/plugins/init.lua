@@ -107,7 +107,7 @@ require('lazy').setup({
         flowchart_diagrams = {},
         content_editable = 0,
         disable_filename = 0,
-        toc = {}
+        toc = {},
       }
     end,
     ft = { 'markdown' },
@@ -146,6 +146,9 @@ require('lazy').setup({
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
+  },
+  {
+    'san-siva/blogkit-md.nvim',
   },
 }, {
   ui = {

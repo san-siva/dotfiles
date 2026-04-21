@@ -2,6 +2,11 @@
 .DS_Store
 *.log
 
+# Compiled binaries
+*.o
+*.swp
+configs/keyremap-watcher
+
 # IDE and tool configs (generated/cached)
 .claude/
 coc/
@@ -56,3 +61,5 @@ JetBrainsMonoPatched/
 website/.next/
 website/out/
 website/node_modules/
+
+op/
