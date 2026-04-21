@@ -1,17 +1,13 @@
-;; Kanata config — keyboard remapping for macOS
-;;
-;; Swap Caps Lock <-> Left Control globally.
-;; Block the Logitech MX Keys Mini lock macro (physical lctl+lmet+q),
-;; which after the swap would otherwise fire as caps+cmd+q and quit apps.
+(defcfg
+  ;; Helps the OS ignore the physical state of the keys 
+  ;; and listen only to Kanata's virtual events.
+  process-unmapped-keys yes
+)
 
 (defsrc
-  caps lctl lmet q
+  caps lctl
 )
 
 (deflayer default
-  lctl caps lmet q
-)
-
-(defoverrides
-  (caps lmet q) (nop0)
+  lctl caps
 )
