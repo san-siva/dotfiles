@@ -117,6 +117,17 @@ install_kitty() {
 	fi
 }
 
+install_kanata() {
+	if [ -n "$(command -v kanata)" ]; then
+		echo 'Kanata already installed'
+	else
+		echo 'Installing Kanata'
+		brew install kanata
+		echo 'Starting Kanata service (requires sudo)...'
+		sudo brew services start kanata
+	fi
+}
+
 install_python_wsl() {
 	if [ -n "$(command -v python)" ]; then
 		echo 'Python already installed'
@@ -323,6 +334,7 @@ main() {
 	install_java_packages
 	install_tmux
 	install_kitty
+	install_kanata
 	install_oh_my_zsh
 	install_go
 	install_markdown_preview

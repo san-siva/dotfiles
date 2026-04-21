@@ -41,11 +41,9 @@ link_eclipse_configs() {
 
 
 
-link_launch_agents() {
-	# Caps Lock <-> Ctrl swap on Apple keyboards (global)
-	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
-	launchctl bootout "gui/$(id -u)/com.user.keyremap" 2>/dev/null
-	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
+link_kanata() {
+	mkdir -p ~/.config/kanata
+	link ~/.config/configs/kanata.kbd ~/.config/kanata/kanata.kbd
 }
 
 
@@ -60,7 +58,7 @@ main() {
 	link_git_configs
 	link_ssh_config
 	link_eclipse_configs
-	link_launch_agents
+	link_kanata
 
 	echo "Symlinks created successfully!"
 }

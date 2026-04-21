@@ -12,6 +12,9 @@ gh/
 thefuck/
 simple-update-notifier/
 
+# Kanata runtime directory (created by link-dotfiles, contains only a symlink)
+kanata/
+
 # Application directories (generated/cached)
 GNS3/
 firebase/
