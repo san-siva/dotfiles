@@ -312,13 +312,16 @@ The `assets/` directory contains static resources:
 
 ## Key Remapping
 
-Key remapping is handled via a `hidutil` LaunchAgent (`configs/com.user.keyremap.plist`), symlinked to `~/Library/LaunchAgents/` by `link-dotfiles` and loaded at login.
+Two LaunchAgents handle key remapping, both symlinked to `~/Library/LaunchAgents/` by `link-dotfiles`.
 
-| Mapping | Scope |
-| ------- | ----- |
-| Caps Lock <-> Ctrl swap | All keyboards (global) |
+| Agent | Mapping | Scope |
+| ----- | ------- | ----- |
+| `com.user.keyremap.plist` | Caps Lock ↔ Ctrl (two-way swap) | All keyboards (global) |
+| `com.user.keyremap.logitech.plist` | Caps Lock → Ctrl (one-way) | Logitech MX Keys Mini only |
 
-The remapping resets on reboot — the LaunchAgent re-applies it automatically at every login.
+The global agent uses `hidutil` and re-applies at every login. The Logitech agent runs `keyremap-watcher` — a Swift daemon using `IOHIDManager` that fires `hidutil` the moment the device connects, surviving Bluetooth reconnects with zero polling overhead.
+
+`link-dotfiles` compiles `configs/keyremap-watcher.swift` to `configs/keyremap-watcher` (gitignored) via `swiftc`. Requires Xcode Command Line Tools (`xcode-select --install`). The Logitech agent is skipped gracefully if `swiftc` is not available.
 
 ## License
 
