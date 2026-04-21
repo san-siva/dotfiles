@@ -42,9 +42,12 @@ link_eclipse_configs() {
 
 
 install_keyremap_watcher() {
-	mkdir -p ~/.local/bin
+	if ! command -v swiftc &>/dev/null; then
+		echo "swiftc not found — skipping keyremap-watcher (install Xcode Command Line Tools: xcode-select --install)"
+		return 1
+	fi
 	echo "Compiling keyremap-watcher..."
-	swiftc ~/.config/configs/keyremap-watcher.swift -framework IOKit -o ~/.local/bin/keyremap-watcher
+	swiftc ~/.config/configs/keyremap-watcher.swift -framework IOKit -o ~/.config/configs/keyremap-watcher
 }
 
 link_launch_agents() {
@@ -54,10 +57,11 @@ link_launch_agents() {
 	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
 
 	# Caps Lock -> Ctrl only on Logitech MX Keys Mini (event-driven via IOKit)
-	install_keyremap_watcher
-	link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
-	launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
-	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+	if install_keyremap_watcher; then
+		link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+		launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
+		launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+	fi
 }
 
 

@@ -6,7 +6,7 @@
     <string>com.user.keyremap.logitech</string>
     <key>ProgramArguments</key>
     <array>
-      <string>/Users/santhosh.siva/.local/bin/keyremap-watcher</string>
+      <string>/Users/santhosh.siva/.config/configs/keyremap-watcher</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
