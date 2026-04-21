@@ -17,13 +17,13 @@ All configuration lives under `~/.config`:
 
 | Path       | Description                                                    |
 | ---------- | -------------------------------------------------------------- |
-| `nvim/`    | Neovim configuration (init.lua + Lua modules)                  |
-| `kitty/`   | Kitty terminal — fonts, theme, window settings                 |
-| `fish/`    | Fish shell — minimal PATH additions                            |
-| `configs/` | Home-dir dotfiles (`.zshrc`, `.gitconfig`, `.tmux.conf`, etc.) |
-| `bin/`     | Shell utility scripts (`android/`, `dev/`, `utils.sh`)         |
-| `git/`     | Global git config and gitignore                                |
-| `assets/`  | Screenshots, patched fonts, theme files                        |
+| `nvim/`     | Neovim configuration (init.lua + Lua modules)                  |
+| `kitty/`    | Kitty terminal — fonts, theme, window settings                 |
+| `fish/`     | Fish shell — minimal PATH additions                            |
+| `configs/`  | Home-dir dotfiles (`.zshrc`, `.gitconfig`, `.tmux.conf`, etc.) |
+| `bin/`      | Shell utility scripts (`android/`, `dev/`, `utils.sh`)         |
+| `git/`      | Global git config and gitignore                                |
+| `assets/`   | Screenshots, patched fonts, theme files                        |
 
 > [!TIP]
 >
@@ -39,6 +39,7 @@ All configuration lives under `~/.config`:
 | `kitty`                   | Terminal emulator                       |
 | `zsh`                     | Primary shell                           |
 | `brew`                    | macOS package manager                   |
+| `kanata`                  | Keyboard remapping daemon               |
 | `JetBrainsMono Nerd Font` | Font (all terminals + Neovim)           |
 
 ## Installation
@@ -56,7 +57,7 @@ git remote add origin https://github.com/san-siva/dotfiles
 git pull origin main
 ```
 
-Three setup scripts handle the full environment bootstrap. Run them in order, or use `setup-environment` to run all three at once.
+Four setup scripts handle the full environment bootstrap. Run them in order, or use `setup-environment` to run all at once.
 
 ### setup-environment
 
@@ -74,6 +75,7 @@ The top-level bootstrapper. Installs all system tools via Homebrew, then delegat
 | Shell             | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`                                    |
 | CLI tools         | `ripgrep`, `fzf`, `fd`, `zoxide`, `jq`, `yq`, `gh`, `fish`, `deno`, `wget`, `tree`, `fastfetch` |
 | Formatters        | `black` (Python), `sqlfluff`, `shfmt` (via Go), `stylua` (via Cargo)                            |
+| Key remapping     | `kanata`, Karabiner VirtualHIDDevice driver (from GitHub releases)                               |
 
 ### install-global-deps
 
@@ -101,23 +103,38 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 ~/.config/bin/dev/setup/link-dotfiles
 ```
 
-| Source                                     | Symlinked to              |
-| ------------------------------------------ | ------------------------- |
-| `configs/.tmux.conf`                       | `~/.tmux.conf`            |
-| `configs/.prettierrc.json`                 | `~/.prettierrc.json`      |
-| `configs/.eslintrc.json`                   | `~/.eslintrc.json`        |
-| `configs/.p10k.zsh`                        | `~/.p10k.zsh`             |
-| `configs/.gitconfig`                       | `~/.gitconfig`            |
-| `configs/.gitconfig__wrk`                  | `~/.gitconfig__wrk`       |
-| `configs/ssh_config`                       | `~/.ssh/config`           |
-| `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
-| `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
-| `configs/com.user.keyremap.plist`          | `~/Library/LaunchAgents/` |
-| `configs/com.user.keyremap.logitech.plist` | `~/Library/LaunchAgents/` |
+| Source                                  | Symlinked to                      |
+| --------------------------------------- | --------------------------------- |
+| `configs/.tmux.conf`                    | `~/.tmux.conf`                    |
+| `configs/.prettierrc.json`              | `~/.prettierrc.json`              |
+| `configs/.eslintrc.json`                | `~/.eslintrc.json`                |
+| `configs/.p10k.zsh`                     | `~/.p10k.zsh`                     |
+| `configs/.gitconfig`                    | `~/.gitconfig`                    |
+| `configs/.gitconfig__wrk`               | `~/.gitconfig__wrk`               |
+| `configs/ssh_config`                    | `~/.ssh/config`                   |
+| `configs/eclipse-java-google-style.xml` | `~/.local/share/eclipse/`         |
+| `configs/lombok.jar`                    | `~/.local/share/eclipse/`         |
+| `configs/kanata.kbd`                    | `~/.config/kanata/kanata.kbd`     |
 
 > [!WARNING]
 >
 > Existing files at the target paths will be removed before linking. Back up any local changes first.
+
+### start-services
+
+Installs and starts background services as root-level LaunchDaemons. Safe to re-run.
+
+```bash
+~/.config/bin/dev/setup/start-services
+```
+
+| Service  | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `kanata` | Keyboard remapping daemon — installs plist and bootstraps it   |
+
+> [!NOTE]
+>
+> Run `start-services` after granting Input Monitoring permission to `/opt/homebrew/bin/kanata` in System Settings → Privacy & Security.
 
 ## Neovim
 
@@ -312,13 +329,17 @@ The `assets/` directory contains static resources:
 
 ## Key Remapping
 
-Key remapping is handled via a `hidutil` LaunchAgent (`configs/com.user.keyremap.plist`), symlinked to `~/Library/LaunchAgents/` by `link-dotfiles` and loaded at login.
+Key remapping is handled by [Kanata](https://github.com/jtroo/kanata) running as a root-level LaunchDaemon (`/Library/LaunchDaemons/com.user.kanata.plist`). Config lives at `configs/kanata.kbd` and is symlinked to `~/.config/kanata/kanata.kbd` by `link-dotfiles`. The daemon is installed and started by `bin/dev/setup/start-services`.
 
-| Mapping | Scope |
-| ------- | ----- |
-| Caps Lock <-> Ctrl swap | All keyboards (global) |
+| Mapping | Note |
+| ------- | ---- |
+| Caps Lock → Left Control | Global, all keyboards |
+| Left Control → Caps Lock | Global, all keyboards |
+| Cmd+Ctrl+Q (MX Keys lock button) → blocked | Prevents Logitech lock macro from quitting apps |
 
-The remapping resets on reboot — the LaunchAgent re-applies it automatically at every login.
+> [!NOTE]
+>
+> Kanata requires the [Karabiner VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice) driver and Input Monitoring permission granted to `/opt/homebrew/bin/kanata` in System Settings → Privacy & Security.
 
 ## License
 
