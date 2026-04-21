@@ -173,28 +173,6 @@ enable_corepack() {
 	corepack enable
 }
 
-install_karabiner_driver() {
-	if systemextensionsctl list 2>/dev/null | grep -q "org.pqrs.Karabiner-DriverKit-VirtualHIDDevice"; then
-		echo "Karabiner VirtualHIDDevice driver already installed"
-		return 0
-	fi
-
-	echo "Installing Karabiner VirtualHIDDevice driver (required by kanata)..."
-	local pkg_url
-	pkg_url=$(curl -s https://api.github.com/repos/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/latest \
-		| grep "browser_download_url.*\.pkg" | cut -d'"' -f4)
-
-	if [ -z "$pkg_url" ]; then
-		echo "Failed to fetch Karabiner driver download URL"
-		return 1
-	fi
-
-	curl -L "$pkg_url" -o /tmp/karabiner-driver.pkg
-	sudo installer -pkg /tmp/karabiner-driver.pkg -target /
-	rm -f /tmp/karabiner-driver.pkg
-	echo "Karabiner VirtualHIDDevice driver installed"
-}
-
 main() {
 	echo "Sankit"
 	echo ""
@@ -207,7 +185,6 @@ main() {
 	install_eslint_configs
 	install_ruby_deps
 	enable_corepack
-	install_karabiner_driver
 }
 
 main "$@"
