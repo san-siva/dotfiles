@@ -323,6 +323,10 @@ The global agent uses `hidutil` and re-applies at every login. The Logitech agen
 
 `link-dotfiles` compiles `configs/keyremap-watcher.swift` to `configs/keyremap-watcher` (gitignored) via `swiftc`. Requires Xcode Command Line Tools (`xcode-select --install`). The Logitech agent is skipped gracefully if `swiftc` is not available.
 
+> [!NOTE]
+>
+> `com.user.keyremap.logitech.plist` hardcodes the absolute path to `keyremap-watcher` because launchd does not expand `~` in `ProgramArguments`. If you clone to a different home directory, update line 9 of that file accordingly.
+
 ## License
 
 This project is licensed under the MIT License.
