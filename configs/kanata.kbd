@@ -1,13 +1,16 @@
 (defcfg
-  ;; Helps the OS ignore the physical state of the keys 
-  ;; and listen only to Kanata's virtual events.
   process-unmapped-keys yes
 )
 
 (defsrc
-  caps lctl
+  caps lctl lmet q
 )
 
 (deflayer default
-  lctl caps
+  lctl caps lmet q
+)
+
+;; Block the Logitech MX Keys Mini lock button macro (lctl+lmet+q).
+(defoverrides
+  (lctl lmet q) (nop0)
 )
