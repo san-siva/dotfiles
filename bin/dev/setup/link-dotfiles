@@ -42,16 +42,12 @@ link_eclipse_configs() {
 
 
 link_launch_agents() {
-	# Caps Lock <-> Ctrl swap on Apple keyboards
+	# Caps Lock <-> Ctrl swap on Apple keyboards (global)
 	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
 	launchctl bootout "gui/$(id -u)/com.user.keyremap" 2>/dev/null
 	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
-
-	# Caps Lock -> Ctrl only on Logitech MX Keys Mini
-	link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
-	launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
-	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
 }
+
 
 main() {
 	echo "Sankit"

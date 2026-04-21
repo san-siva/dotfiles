@@ -312,14 +312,13 @@ The `assets/` directory contains static resources:
 
 ## Key Remapping
 
-Key remapping is handled via two `hidutil` LaunchAgents, symlinked from `configs/` to `~/Library/LaunchAgents/` by `link-dotfiles` and loaded at login.
+Key remapping is handled via a `hidutil` LaunchAgent (`configs/com.user.keyremap.plist`), symlinked to `~/Library/LaunchAgents/` by `link-dotfiles` and loaded at login.
 
-| Plist                              | Scope                                         | Mapping                     |
-| ---------------------------------- | --------------------------------------------- | --------------------------- |
-| `com.user.keyremap.plist`          | All keyboards (global)                        | Caps Lock <-> Ctrl swap     |
-| `com.user.keyremap.logitech.plist` | Logitech MX Keys Mini only (`0x46D`/`0xB369`) | Caps Lock -> Ctrl (one-way) |
+| Mapping | Scope |
+| ------- | ----- |
+| Caps Lock <-> Ctrl swap | All keyboards (global) |
 
-The Logitech rule uses `hidutil --matching` to scope by vendor and product ID, overriding the global swap for that device.
+The remapping resets on reboot — the LaunchAgent re-applies it automatically at every login.
 
 ## License
 
