@@ -41,11 +41,23 @@ link_eclipse_configs() {
 
 
 
+install_keyremap_watcher() {
+	mkdir -p ~/.local/bin
+	echo "Compiling keyremap-watcher..."
+	swiftc ~/.config/configs/keyremap-watcher.swift -framework IOKit -o ~/.local/bin/keyremap-watcher
+}
+
 link_launch_agents() {
 	# Caps Lock <-> Ctrl swap on Apple keyboards (global)
 	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
 	launchctl bootout "gui/$(id -u)/com.user.keyremap" 2>/dev/null
 	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
+
+	# Caps Lock -> Ctrl only on Logitech MX Keys Mini (event-driven via IOKit)
+	install_keyremap_watcher
+	link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
+	launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
+	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
 }
 
 
