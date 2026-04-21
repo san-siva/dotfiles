@@ -134,6 +134,11 @@ install_brew_packages() {
 
 	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch figlet lolcat
 
+	# Karabiner-Elements provides the VirtualHIDDevice driver required by kanata.
+	# The app itself is not used — install it once to activate the system extension,
+	# grant Input Monitoring permission when prompted, then quit it.
+	brew install --cask karabiner-elements
+
 	# Optional: Uncomment to setup mkcert
 	# mkcert -install
 	# mkcert localhost

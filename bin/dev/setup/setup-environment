@@ -123,10 +123,9 @@ install_kanata() {
 	else
 		echo 'Installing Kanata'
 		brew install kanata
-		echo 'Starting Kanata service (requires sudo)...'
-		sudo brew services start kanata
 	fi
 }
+
 
 install_python_wsl() {
 	if [ -n "$(command -v python)" ]; then
@@ -351,6 +350,10 @@ main() {
 	echo ""
 	echo "Running link-dotfiles..."
 	bash ~/.config/bin/dev/setup/link-dotfiles
+
+	echo ""
+	echo "Starting services..."
+	bash ~/.config/bin/dev/setup/start-services
 }
 
 main "$@"

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-04-2026
+
+# Description:
+# Starts background services required for the development environment.
+# Safe to re-run — brew services handles already-running services gracefully.
+
+start_kanata() {
+	echo 'Starting Kanata service (requires sudo)...'
+	sudo brew services start kanata
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+	echo "Starting services..."
+	echo ""
+
+	start_kanata
+
+	echo ""
+	echo "Services started!"
+}
+
+main "$@"
+exit 0
