@@ -112,8 +112,6 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/ssh_config`                       | `~/.ssh/config`           |
 | `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
-| `configs/com.user.keyremap.plist`          | `~/Library/LaunchAgents/` |
-| `configs/com.user.keyremap.logitech.plist` | `~/Library/LaunchAgents/` |
 
 > [!WARNING]
 >
@@ -312,20 +310,12 @@ The `assets/` directory contains static resources:
 
 ## Key Remapping
 
-Two LaunchAgents handle key remapping, both symlinked to `~/Library/LaunchAgents/` by `link-dotfiles`.
+Key remapping is configured via **System Settings → Keyboard → Modifier Keys** — handled at the kernel level with zero userspace overhead. Configured per-device, persists across reboots, and automatically restores on Bluetooth reconnect.
 
-| Agent | Mapping | Scope |
-| ----- | ------- | ----- |
-| `com.user.keyremap.plist` | Caps Lock ↔ Ctrl (two-way swap) | All keyboards (global) |
-| `com.user.keyremap.logitech.plist` | Caps Lock → Ctrl (one-way) | Logitech MX Keys Mini only |
-
-The global agent uses `hidutil` and re-applies at every login. The Logitech agent runs `keyremap-watcher` — a Swift daemon using `IOHIDManager` that fires `hidutil` the moment the device connects, surviving Bluetooth reconnects with zero polling overhead.
-
-`link-dotfiles` compiles `configs/keyremap-watcher.swift` to `configs/keyremap-watcher` (gitignored) via `swiftc`. Requires Xcode Command Line Tools (`xcode-select --install`). The Logitech agent is skipped gracefully if `swiftc` is not available.
-
-> [!NOTE]
->
-> `com.user.keyremap.logitech.plist` hardcodes the absolute path to `keyremap-watcher` because launchd does not expand `~` in `ProgramArguments`. If you clone to a different home directory, update line 9 of that file accordingly.
+| Device | Mapping |
+| ------ | ------- |
+| Apple keyboards | Caps Lock ↔ Ctrl (two-way swap) |
+| Logitech MX Keys Mini | Caps Lock → Ctrl (one-way) |
 
 ## License
 
