@@ -40,31 +40,6 @@ link_eclipse_configs() {
 }
 
 
-
-install_keyremap_watcher() {
-	if ! command -v swiftc &>/dev/null; then
-		echo "swiftc not found — skipping keyremap-watcher (install Xcode Command Line Tools: xcode-select --install)"
-		return 1
-	fi
-	echo "Compiling keyremap-watcher..."
-	swiftc ~/.config/configs/keyremap-watcher.swift -framework IOKit -o ~/.config/configs/keyremap-watcher
-}
-
-link_launch_agents() {
-	# Caps Lock <-> Ctrl swap on Apple keyboards (global)
-	link ~/.config/configs/com.user.keyremap.plist ~/Library/LaunchAgents/com.user.keyremap.plist
-	launchctl bootout "gui/$(id -u)/com.user.keyremap" 2>/dev/null
-	launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.plist
-
-	# Caps Lock -> Ctrl only on Logitech MX Keys Mini (event-driven via IOKit)
-	if install_keyremap_watcher; then
-		link ~/.config/configs/com.user.keyremap.logitech.plist ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
-		launchctl bootout "gui/$(id -u)/com.user.keyremap.logitech" 2>/dev/null
-		launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.user.keyremap.logitech.plist
-	fi
-}
-
-
 main() {
 	echo "Sankit"
 	echo ""
@@ -76,7 +51,6 @@ main() {
 	link_git_configs
 	link_ssh_config
 	link_eclipse_configs
-	link_launch_agents
 
 	echo "Symlinks created successfully!"
 }

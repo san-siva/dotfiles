@@ -2,10 +2,6 @@
 .DS_Store
 *.log
 
-# Compiled binaries
-*.o
-*.swp
-configs/keyremap-watcher
 
 # IDE and tool configs (generated/cached)
 .claude/
