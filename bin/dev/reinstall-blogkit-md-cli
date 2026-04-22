@@ -42,10 +42,8 @@ try_removing_blogkit_md_cli_from_bin() {
 	return 1
 }
 
-BLOGKIT_MD_CLI_LOCAL_DIR="$HOME/Documents/Personal/portfolio_website/blogkit-md-cli"
-
 try_installing_blogkit_md_cli() {
-	if (npm install -g "$BLOGKIT_MD_CLI_LOCAL_DIR" >/dev/null 2>&1); then
+	if (npm install -g @san-siva/blogkit-md-cli >/dev/null 2>&1); then
 		print_message "${GREEN}Installed successfully${NC}" 4
 		return 0
 	fi
