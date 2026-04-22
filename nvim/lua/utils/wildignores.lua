@@ -1,3 +1,6 @@
+-- NOTE: These are Lua patterns, not globs. '.' is a wildcard in Lua — use '%.' for a
+-- literal dot. e.g. '.git' would match any path containing '-git', 'agit', etc.
+-- which caused files like 'reinstall-gitsy' to be hidden from Telescope find_files.
 local wildignore_patterns = {
   '**/.Images/**',
   '%.Images',
