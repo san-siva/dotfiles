@@ -308,15 +308,6 @@ The `assets/` directory contains static resources:
 | `catppuccin/`              | Catppuccin syntax highlight theme files for Zsh |
 | `JetBrainsMonoPatched.zip` | Patched JetBrainsMono with Nerd Font glyphs     |
 
-## Key Remapping
-
-Key remapping is configured via **System Settings → Keyboard → Modifier Keys** — handled at the kernel level with zero userspace overhead. Configured per-device, persists across reboots, and automatically restores on Bluetooth reconnect.
-
-| Device | Mapping |
-| ------ | ------- |
-| Apple keyboards | Caps Lock ↔ Ctrl (two-way swap) |
-| Logitech MX Keys Mini | Caps Lock → Ctrl (one-way) |
-
 ## License
 
 This project is licensed under the MIT License.
