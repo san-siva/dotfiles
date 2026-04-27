@@ -106,3 +106,4 @@ TASK*.md
 PROMPT*.md
 TODO*.md
 custom_bin/
+.claude/
