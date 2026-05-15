@@ -105,4 +105,6 @@ build/
 TASK*.md
 PROMPT*.md
 TODO*.md
+RUBBER_DUCK*.md
 custom_bin/
+.claude/
