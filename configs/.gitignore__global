@@ -106,5 +106,6 @@ TASK*.md
 PROMPT*.md
 TODO*.md
 RUBBER_DUCK*.md
+RubberDuck*.md
 custom_bin/
 .claude/
