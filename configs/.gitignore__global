@@ -109,3 +109,7 @@ RUBBER_DUCK*.md
 RubberDuck*.md
 custom_bin/
 .claude/
+temp/
+tmp/
+TEMP/
+Temp/

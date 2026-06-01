@@ -31,6 +31,12 @@ print_message() {
 		return 0
 	fi
 
+	# Negative (e.g. -1): flush left, no indent — blank spacers and error lines.
+	if [ "$number" -lt 0 ]; then
+		echo -e "$message"
+		return 0
+	fi
+
 	# print_message ""
 
 	if [ "$number" -lt 10 ]; then
