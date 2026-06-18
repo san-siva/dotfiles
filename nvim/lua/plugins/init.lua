@@ -120,8 +120,6 @@ require('lazy').setup({
     },
     opts = {},
   },
-  -- 'zbirenbaum/copilot.lua',
-  'supermaven-inc/supermaven-nvim',
   'nvim-lualine/lualine.nvim',
   {
     'lukas-reineke/indent-blankline.nvim',
@@ -180,7 +178,6 @@ require 'plugins.lspconfig'
 require 'plugins.conform'
 require 'plugins.tree'
 -- require 'plugins.copilot'
-require 'plugins.supermaven'
 require 'plugins.lualine'
 require 'plugins.catppuccin'
 require 'plugins.fugitive'
