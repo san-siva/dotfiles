@@ -133,6 +133,7 @@ setup_custom_bins() {
         append_path "$HOME/.config/bin/android"
         append_path "$HOME/.config/bin/dev"
         append_path "$HOME/.config/bin/dev/setup"
+        append_path "$HOME/.config/bin/kubectl"
     fi
 
     # Add custom project paths here if needed
