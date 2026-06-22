@@ -116,8 +116,12 @@ setup_node_environment() {
         append_path "$(yarn global bin)"
     fi
 
-    # Node configuration
-    export NODE_OPTIONS="--use-system-ca"
+    # Trust the Zscaler TLS-interception CA for Node/Bun tooling (see bin/dev/zscalar_fix.sh)
+    if [ -f "$HOME/.certs/zscaler-ca.crt" ]; then
+        export NODE_EXTRA_CA_CERTS="$HOME/.certs/zscaler-ca.crt"
+    else
+        echo "Warning: Zscaler CA not found. Run: $HOME/.config/bin/dev/zscalar_fix.sh"
+    fi
 }
 
 setup_custom_bins() {
