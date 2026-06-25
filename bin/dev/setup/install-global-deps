@@ -134,6 +134,9 @@ install_brew_packages() {
 
 	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch figlet lolcat
 
+	# Flux CD (Kubernetes GitOps tooling)
+	brew install fluxcd/tap/flux
+
 	# Optional: Uncomment to setup mkcert
 	# mkcert -install
 	# mkcert localhost
