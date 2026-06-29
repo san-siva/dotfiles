@@ -113,3 +113,5 @@ temp/
 tmp/
 TEMP/
 Temp/
+
+**/.claude/settings.local.json
