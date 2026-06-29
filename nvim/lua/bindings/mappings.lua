@@ -31,31 +31,31 @@ vim.keymap.set('n', '<leader>S', ':source $MYVIMRC<CR>', { noremap = true, silen
 vim.keymap.set('n', '<leader>M', ':delm! | delm A-Z0-9<CR>', { noremap = true, silent = false, desc = 'Delete all marks' })
 
 -- NOTE: File name
-local function copy_current_file_path(is_absolute)
+local function copy_current_file_path(is_absolute, include_line)
   local path = is_absolute and vim.fn.expand '%:p' or vim.fn.expand '%:.'
-  vim.fn.setreg('+', path)
 
-  if is_absolute then
-    vim.notify('Copied ' .. path)
-    return
+  if include_line then
+    path = path .. ':' .. vim.fn.line '.'
   end
-
-  local line_number = vim.fn.line '.'
-  path = path .. ':' .. line_number
 
   vim.fn.setreg('+', path)
   vim.notify('Copied ' .. path)
 end
 
-vim.keymap.set('n', '<leader>p', copy_current_file_path, { noremap = true, silent = true })
+-- Path only
+vim.keymap.set('n', '<leader>p', function()
+  copy_current_file_path(false, false)
+end, { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>P', function()
-  copy_current_file_path(true)
+  copy_current_file_path(true, false)
 end, { noremap = true, silent = true })
 
--- Copy line number
+-- Path with line number
 vim.keymap.set('n', '<leader>l', function()
-  local line_number = vim.fn.line '.'
-  vim.fn.setreg('+', line_number)
+  copy_current_file_path(false, true)
+end, { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>L', function()
+  copy_current_file_path(true, true)
 end, { noremap = true, silent = true })
 
 -- NOTE: Diagnostic keymaps
