@@ -306,6 +306,23 @@ update_ca_certificates() {
 	brew install ca-certificates
 }
 
+install_ollama() {
+	if [ -n "$(command -v ollama)" ]; then
+		echo 'Ollama already installed'
+	else
+		echo 'Installing Ollama'
+		brew install ollama
+	fi
+
+	# Start Ollama as a background service so models can be pulled/served
+	echo 'Starting Ollama service'
+	brew services start ollama
+
+	# Local code-completion model used by minuet-ai.nvim
+	echo 'Pulling qwen2.5-coder:1.5b'
+	ollama pull qwen2.5-coder:1.5b
+}
+
 main() {
 	echo "Sankit"
 	echo ""
@@ -330,6 +347,7 @@ main() {
 	install_moreutils
 	install_cmatrix
 	install_tree
+	install_ollama
 	update_ca_certificates
 
 	echo ""

@@ -148,6 +148,10 @@ require('lazy').setup({
   {
     'san-siva/blogkit-md.nvim',
   },
+  {
+    'milanglacier/minuet-ai.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+  },
 }, {
   ui = {
     icons = vim.g.have_nerd_font and {} or {
@@ -178,6 +182,7 @@ require 'plugins.lspconfig'
 require 'plugins.conform'
 require 'plugins.tree'
 -- require 'plugins.copilot'
+require 'plugins.minuet'
 require 'plugins.lualine'
 require 'plugins.catppuccin'
 require 'plugins.fugitive'
