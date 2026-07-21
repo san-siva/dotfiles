@@ -4,8 +4,36 @@ if not status then
   return
 end
 
+-- Search every build.gradle up to the git root, since the spotless config usually
+-- lives in the top-level build.gradle rather than a subproject's own file.
+local function uses_non_aosp_spotless_format(dirname)
+  -- stop is exclusive of the directory it names, so stop one level above the
+  -- git root to make sure the root's own build.gradle still gets searched.
+  local git_dir = vim.fs.find('.git', { path = dirname, upward = true })[1]
+  local stop_dir = git_dir and vim.fs.dirname(vim.fs.dirname(git_dir))
+
+  local gradle_files = vim.fs.find({ 'build.gradle', 'build.gradle.kts' }, {
+    path = dirname,
+    upward = true,
+    limit = math.huge,
+    stop = stop_dir,
+  })
+  for _, gradle_file in ipairs(gradle_files) do
+    local content = table.concat(vim.fn.readfile(gradle_file), '\n')
+    if content:match 'googleJavaFormat' and not content:match 'googleJavaFormat%(.*aosp' then
+      return true
+    end
+  end
+  return false
+end
+
 conform.formatters['google-java-format'] = {
-  prepend_args = { '--aosp' },
+  prepend_args = function(self, ctx)
+    if uses_non_aosp_spotless_format(ctx.dirname) then
+      return {}
+    end
+    return { '--aosp' }
+  end,
 }
 
 local isYamlLintFileAvailable = vim.fn.filereadable '.yamllint.yaml' == 1
