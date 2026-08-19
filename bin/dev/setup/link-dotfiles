@@ -41,10 +41,10 @@ link_eclipse_configs() {
 
 link_agent_skills() {
 	mkdir -p ~/.claude
-	mkdir -p ~/.gemini/antigravity
+	mkdir -p ~/.gemini
 
 	link ~/.config/configs/agent-skills ~/.claude/skills
-	link ~/.config/configs/agent-skills ~/.gemini/antigravity/skills
+	link ~/.config/configs/agent-skills ~/.gemini/skills
 }
 
 link_antigravity_keybindings() {
