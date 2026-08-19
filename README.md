@@ -113,7 +113,7 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
 | `configs/agent-skills`                     | `~/.claude/skills`        |
-| `configs/agent-skills`                     | `~/.gemini/antigravity/skills` |
+| `configs/agent-skills`                     | `~/.gemini/skills`        |
 | `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
