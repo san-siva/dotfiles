@@ -39,6 +39,14 @@ link_eclipse_configs() {
 	link ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
 }
 
+link_agent_skills() {
+	mkdir -p ~/.claude
+	mkdir -p ~/.gemini/antigravity
+
+	link ~/.config/configs/agent-skills ~/.claude/skills
+	link ~/.config/configs/agent-skills ~/.gemini/antigravity/skills
+}
+
 
 main() {
 	echo "Sankit"
@@ -51,6 +59,7 @@ main() {
 	link_git_configs
 	link_ssh_config
 	link_eclipse_configs
+	link_agent_skills
 
 	echo "Symlinks created successfully!"
 }
