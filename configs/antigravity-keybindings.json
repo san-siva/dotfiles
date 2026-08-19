@@ -1,0 +1,4 @@
+{
+  "list.move_down": ["ctrl+j"],
+  "list.move_up": ["ctrl+k"]
+}

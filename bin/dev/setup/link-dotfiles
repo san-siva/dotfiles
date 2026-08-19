@@ -47,6 +47,12 @@ link_agent_skills() {
 	link ~/.config/configs/agent-skills ~/.gemini/antigravity/skills
 }
 
+link_antigravity_keybindings() {
+	mkdir -p ~/.gemini/antigravity-cli
+
+	link ~/.config/configs/antigravity-keybindings.json ~/.gemini/antigravity-cli/keybindings.json
+}
+
 
 main() {
 	echo "Sankit"
@@ -60,6 +66,7 @@ main() {
 	link_ssh_config
 	link_eclipse_configs
 	link_agent_skills
+	link_antigravity_keybindings
 
 	echo "Symlinks created successfully!"
 }

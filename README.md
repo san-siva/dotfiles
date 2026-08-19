@@ -114,6 +114,7 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
 | `configs/agent-skills`                     | `~/.claude/skills`        |
 | `configs/agent-skills`                     | `~/.gemini/antigravity/skills` |
+| `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
 >
