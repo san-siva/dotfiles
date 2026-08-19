@@ -112,6 +112,8 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/ssh_config`                       | `~/.ssh/config`           |
 | `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
+| `configs/agent-skills`                     | `~/.claude/skills`        |
+| `configs/agent-skills`                     | `~/.gemini/antigravity/skills` |
 
 > [!WARNING]
 >
