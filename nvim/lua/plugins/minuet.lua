@@ -25,6 +25,9 @@ minuet.setup {
   -- Inline suggestions, mirroring copilot's keymap so accept stays <C-o>.
   virtualtext = {
     auto_trigger_ft = { '*' },
+    -- Show minuet's ghost text even when nvim-cmp's popup menu is open;
+    -- otherwise it's suppressed almost all the time while typing.
+    show_on_completion_menu = true,
     keymap = {
       accept = '<C-o>',
       accept_line = '<C-u>',
