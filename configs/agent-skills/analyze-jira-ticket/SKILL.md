@@ -8,7 +8,7 @@ user_invocable: true
 
 - Analyze a specific JIRA ticket and its relationship to the broader Nexthink codebase (Extension, API, Protobufs).
 - Automate the local environment setup (branches/worktrees) using internal skills.
-- Generate a standardized implementation guide (`TASK-[SPACE]-[TICKET_NUMBER].md`) and output it directly to the `~/Work/TASKS/` directory.
+- Generate a standardized implementation guide (`TASK-[SPACE]-[TICKET_NUMBER].md`) and output it directly to the `~/Work/personal.san-siva/notes/investigations` directory.
 
 # Context
 

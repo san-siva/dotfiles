@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 28-08-2026
+
+# Description:
+# Reinstalls/upgrades a global npm package: clears the npm cache, uninstalls
+# the current version (falling back to a forced uninstall or a manual
+# removal from the global node_modules dir), then installs the requested
+# version.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+package=
+version=latest
+
+set_flags() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		-h | --help)
+			echo "reinstall-npm-pkg - reinstall/upgrade a global npm package"
+			echo " "
+			echo "reinstall-npm-pkg <package> [version]"
+			echo " "
+			echo "options:"
+			echo "-h, --help    show brief help"
+			echo " "
+			echo "examples:"
+			echo "  reinstall-npm-pkg @san-siva/gitsy"
+			echo "  reinstall-npm-pkg @san-siva/blogkit-md-cli 0.1.40"
+			exit 0
+			;;
+		*)
+			if [ -z "$package" ]; then
+				package="$1"
+			elif [ "$version" = "latest" ]; then
+				version="$1"
+			else
+				print_message "${RED}Unknown option:${NC} $1" -1
+				exit 1
+			fi
+			;;
+		esac
+		shift
+	done
+
+	if [ -z "$package" ]; then
+		print_message "${RED}Error: No package specified.${NC}" -1
+		exit 1
+	fi
+}
+
+get_package_dir() {
+	local -n result=$1
+	result="$(npm root -g)/${package}"
+}
+
+try_cache_clean() {
+	if (npm cache clean --force >/dev/null 2>&1); then
+		print_message "${GREEN}Cleaned npm cache successfully${NC}" 0
+		return 0
+	fi
+	print_message "${RED}Failed to clean npm cache${NC}" 0
+	return 1
+}
+
+try_uninstall() {
+	if (npm uninstall -g "$package" >/dev/null 2>&1); then
+		print_message "${GREEN}Uninstalled successfully${NC}" 0
+		return 0
+	fi
+	print_message "${RED}Failed to uninstall${NC}" 0
+	return 1
+}
+
+try_force_uninstall() {
+	if (npm uninstall -g --force "$package" >/dev/null 2>&1); then
+		print_message "${GREEN}Force uninstalled successfully${NC}" 0
+		return 0
+	fi
+	print_message "${RED}Failed to force uninstall${NC}" 0
+	return 1
+}
+
+try_removing_from_bin() {
+	local package_dir
+	get_package_dir package_dir
+	if [ -d "$package_dir" ]; then
+		print_message "${GREEN}Removing ${NC}${package}${GREEN} from bin directory${NC}" 0
+		rm -rf "$package_dir"
+		return 0
+	fi
+	print_message "${RED}Failed to remove ${NC}${package}${RED} from bin directory${NC}" 0
+	return 1
+}
+
+try_installing() {
+	if (npm install -g "${package}@${version}" >/dev/null 2>&1); then
+		print_message "${GREEN}Installed successfully${NC}" 0
+		return 0
+	fi
+	return 1
+}
+
+main() {
+	set_flags "$@"
+	validate_dependencies figlet lolcat
+	print_banner
+
+	print_message "${BLUE}Cleaning npm cache...${NC}" 1
+	try_cache_clean
+
+	print_message "${BLUE}Attempting to uninstall ${NC}${package}${BLUE}...${NC}" 2
+
+	if try_uninstall; then
+		:
+	elif try_force_uninstall; then
+		:
+	elif try_removing_from_bin; then
+		:
+	else
+		print_message "${RED}All uninstall methods failed. Proceeding with installation anyway...${NC}" 0
+	fi
+
+	print_message "${BLUE}Installing ${NC}${package}@${version}${BLUE}...${NC}" 3
+	if try_installing; then
+		print_message "${GREEN}${package} reinstalled successfully!${NC}" 4
+		return 0
+	else
+		print_message "${RED}Failed to install ${NC}${package}${RED}.${NC}" 0
+		return 1
+	fi
+}
+
+# Only run main if script is executed directly (not sourced)
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+	main "$@"
+	exit 0
+fi
