@@ -299,7 +299,7 @@ All scripts in `bin/` are on PATH and share a common utility library at `bin/uti
 | `setup-ssh-agent`         | Dev      | Load SSH key into the running agent            |
 | `pwdc`                    | Dev      | Print current working directory (clean output) |
 | `reinstall-claude`        | Dev      | Reinstall Claude Code CLI tool                 |
-| `reinstall-gitsy`         | Dev      | Reinstall the gitsy CLI tool                   |
+| `reinstall-npm-pkg <pkg> [version]` | Dev | Reinstall/upgrade any global npm package |
 
 ## Assets
 
