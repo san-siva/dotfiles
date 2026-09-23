@@ -37,6 +37,7 @@ git/
 configs/.gitconfig
 configs/.gitconfig__wrk
 configs/ssh_config
+configs/agent-skills/
 
 # Old/deprecated files
 nvim_old_09-jan-23/
