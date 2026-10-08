@@ -66,6 +66,7 @@ classDef green fill:#ccffcc,stroke:#000,stroke-width:2px,color:#000000;
 classDef red fill:#ffcccc,stroke:#000,stroke-width:2px,color:#000000;
 classDef blue fill:#ccccff,stroke:#000,stroke-width:2px,color:#000000;
 classDef orange fill:#ffcc99,stroke:#000,stroke-width:2px,color:#000000;
+classDef note fill:#fef9c3,stroke:#ca8a04,stroke-width:1px,stroke-dasharray: 5 5,color:#333;
 ```
 
 | Class    | Use for                                                                  |
@@ -74,6 +75,45 @@ classDef orange fill:#ffcc99,stroke:#000,stroke-width:2px,color:#000000;
 | `red`    | Error states, failures, rejections, removals or deletions                |
 | `blue`   | Primary services, entry points, user-facing                              |
 | `orange` | Warnings, intermediate states, in-progress, change                       |
+| `note`   | Annotations that explain a node (flowcharts have no native notes)        |
+
+### Notes in Flowcharts
+
+Flowcharts have no built-in notes. Use a `:::note` node attached to its subject with an open dotted link (`-.-`):
+
+- Declare all `classDef`s at the **top** of the diagram, right after `graph LR`.
+- Keep the main node label short: `Name:<br/>what it does`.
+- Put the detail (examples, values, caveats) in a note node named `<Subject>Note`, placed next to its subject (inside the same subgraph).
+- Keep edge labels short; let the notes carry the long text.
+- Declare the main edges (`-->`) first, then all note links (`-.-`) together at the end.
+
+```mermaid
+graph LR
+    classDef blue fill:#ccccff,stroke:#000,stroke-width:2px,color:#000000;
+    classDef orange fill:#ffcc99,stroke:#000,stroke-width:2px,color:#000000;
+    classDef green fill:#ccffcc,stroke:#000,stroke-width:2px,color:#000000;
+    classDef note fill:#fef9c3,stroke:#ca8a04,stroke-width:1px,stroke-dasharray: 5 5,color:#333;
+
+    subgraph Inputs [Data Source]
+        URLs([Pages users visit]):::blue
+    end
+
+    subgraph Core [Already Built]
+        Detection[Module Detection:<br/>groups pages into modules]:::green
+        DetectionNote["Names each module and counts its visits"]:::note
+    end
+
+    subgraph Generation [New]
+        Generate[Pattern Generator:<br/>turns URLs into patterns]:::orange
+        GenerateNote["IDs become *, shared prefixes merge, too-broad patterns are rejected"]:::note
+    end
+
+    URLs --> Detection
+    Detection --> Generate
+
+    Detection -.- DetectionNote
+    Generate -.- GenerateNote
+```
 
 > **Convention:** In "before vs after" or "proposed changes" diagrams, always apply `:::green` to every new node so readers can immediately spot additions.
 
