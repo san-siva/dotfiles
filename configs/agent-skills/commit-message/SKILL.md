@@ -65,8 +65,6 @@ fix(guide-recording): resolve session expiration issue
 chore: update dependencies
 ```
 
-> Full spec: see `references/conventional-commits-spec.md`
-
 ## Output format
 
 Present the commit message in a fenced code block ready to copy. Always use the Jira ticket ID extracted from the branch name as the scope. If more than one framing is reasonable, offer up to two alternatives with a brief trade-off note.

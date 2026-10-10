@@ -405,12 +405,12 @@ configs/agent-skills/
 | Skill                 | Description                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------- |
 | `add-logs`            | Add log statements in the `SAN_SIVA` logging format                                 |
-| `analyze-jira-ticket` | Analyse a Jira ticket across the WebExtension ecosystem and plan the implementation |
+| `analyze-jira-ticket` | Analyse a Jira ticket across related repos and plan the implementation              |
 | `bash-scripts`        | Write bash scripts in the gitsy style — sourced utils, `set_flags` parsing, etc.    |
 | `branch-name`         | Suggest a git branch name for a Jira ticket                                         |
 | `commit-and-push`     | Suggest commit messages, pick one, then commit and push                             |
 | `commit-message`      | Suggest a Conventional Commits message for the staged changes                       |
-| `component-tests`     | Build and run Playwright component tests in `appex-adopt.extension`                 |
+| `component-tests`     | Build and run Playwright component tests for a browser extension                    |
 | `create-markdown`     | Write markdown following a consistent style guide, including blogkit-md rules       |
 | `create-worktree`     | Create a git worktree using `g-wa`                                                  |
 | `document-progress`   | Record task progress into `~/Work/TASKS`                                            |
