@@ -260,27 +260,49 @@ graph LR
   A["~/.zshrc<br/>untracked, machine-local"] -->|sources| B["configs/.zshrc<br/>tracked"]
   B -->|sources first| C["configs/.zshrc_pre<br/>prompt + oh-my-zsh"]
   B --> D["main()"]
-  A --> E["Secrets + local exports"]
+  A --> E["main_local()<br/>secrets + local setup"]
 ```
 
 | File                 | Tracked | Responsibility                                                               |
 | -------------------- | ------- | ---------------------------------------------------------------------------- |
-| `~/.zshrc`           | No      | One-line entry point plus machine-specific exports such as API tokens        |
+| `~/.zshrc`           | No      | Entry point plus machine-local `setup_*` functions for secrets and tooling   |
 | `configs/.zshrc`     | Yes     | PATH, language toolchains, integrations, keybindings, aliases                |
 | `configs/.zshrc_pre` | Yes     | Catppuccin syntax highlighting, Powerlevel10k instant prompt, oh-my-zsh load |
 
 ### Machine-local entry point
 
-`~/.zshrc` isn't symlinked. It's a plain file that sources the tracked config and then adds anything that must stay off GitHub:
+`~/.zshrc` isn't symlinked. It's a plain file that sources the tracked config, then follows the same pattern — one `setup_*` function per concern and a `main_local()` that calls them — for anything that must stay off GitHub:
 
 ```bash
 # ~/.zshrc
 source ~/.config/configs/.zshrc
 
-# Secrets — not tracked in any repo
-export JIRA_API_TOKEN="..."
-export FIGMA_API_TOKEN="..."
+setup_env_vars() {
+    # Secrets — not tracked in any repo
+    export JIRA_API_TOKEN="..."
+    export FIGMA_API_TOKEN="..."
+}
+
+setup_local_paths() {
+    export PATH="$HOME/.local/some-tool/bin:$PATH"
+}
+
+setup_local_aliases() {
+    alias work='cd ~/Work'
+}
+
+main_local() {
+    setup_env_vars
+    setup_local_paths
+    setup_local_aliases
+}
+
+main_local
 ```
+
+> [!TIP]
+>
+> **Avoid name clashes:** The tracked config already defines `main` and `setup_aliases`, so local functions use distinct names such as `main_local` and `setup_local_aliases`.
 
 > [!IMPORTANT]
 >
