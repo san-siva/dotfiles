@@ -49,17 +49,56 @@ Use `mermaid-wizard/SKILL.md` to create:
 
 > If cross-repo changes are needed, suggest creating worktrees in multiple repos.
 
+## Documentation Generation & Validation
+
+1. **Load the create-markdown skill** — Ensure you understand the style guide before writing
+2. **Draft the markdown** following the structure templates below
+3. **Validate before output**:
+   - ✓ Descriptive headings only (no numbers)
+   - ✓ No `---` separators (except frontmatter)
+   - ✓ Code locations shown as inline comments, never `file:line` in prose
+   - ✓ All architecture/flow diagrams use Mermaid
+   - ✓ Callouts (`> [!NOTE]`, etc.) used for emphasis
+4. **Output to correct location**: `~/Work/personal.san-siva/notes/investigations/TASK-{ID}.md`
+
 ## Documentation (TASK.md)
 
-For **spike/research tickets** (no code changes expected), create the file as `TASK-{JIRA_TICKET_ID}.md` directly in `~/Work/` instead of a worktree.
+### Markdown Style Compliance
 
-For **implementation tickets**, create a `TASK.md` in the root of the new worktree using this enhanced template:
+**Before creating any markdown output:**
+
+1. Load the `create-markdown` skill to review the style guide
+2. Apply these non-negotiable rules:
+   - ✗ **No numbered section headings** (`## 1.`, `## 2.`, etc.) — use plain descriptive headings instead
+   - ✗ **No `---` horizontal rules** (except in YAML frontmatter) — use headings to separate sections
+   - ✓ **Use Mermaid diagrams** for any architecture, flow, or decision logic
+   - ✓ **Never cite code as `file:line`** in prose — show snippets with location as a comment
+   - ✓ **Use callouts** (`> [!NOTE]`, `> [!IMPORTANT]`) for important information
+
+3. Validate the output before writing to disk
+
+### For Spike/Research Tickets
+
+Create the file as `TASK-{JIRA_TICKET_ID}.md` directly in `~/Work/personal.san-siva/notes/investigations/` (not in a worktree).
+
+**Template structure:**
+- H1: Investigation title
+- **Metadata**: Ticket ID, status, date
+- **Executive Summary**: 3–4 bullet points on findings + recommendation
+- **Sections**: Use only descriptive H2 headings (no numbers)
+- **Diagrams**: Include Mermaid diagrams for flows/architecture
+- **Conclusion**: Restatement of recommendation + effort estimates
+- **Appendix**: File references, related documentation
+
+### For Implementation Tickets
+
+Create a `TASK.md` in the root of the new worktree using this structure:
 
 ```md
 ---
-name: { { TASK_TITLE } }
-jira: { { JIRA_TICKET_ID } }
-description: { { TASK_DESCRIPTION } }
+name: Task Title
+jira: TICKET_ID
+description: Short description of the task.
 ---
 
 # High-Level Strategy
@@ -76,11 +115,17 @@ A concise summary of the architectural approach.
 
 ## Current Architecture
 
-{{MERMAID_DIAGRAM_CURRENT}}
+\`\`\`mermaid
+graph TD
+  A[Component] --> B[Process]
+\`\`\`
 
 ## Proposed Changes
 
-{{MERMAID_DIAGRAM_TARGET}}
+\`\`\`mermaid
+graph TD
+  A[Component] --> B[New Process] --> C[Updated State]
+\`\`\`
 
 # Impact Checklist
 
@@ -90,12 +135,14 @@ A concise summary of the architectural approach.
 
 # Implementation Plan
 
-- Step 1...
-- Step 2...
+1. First step description
+2. Second step description
+3. Final step description
 
-# Affected Files (Probable)
+# Affected Files
 
-- `list/files/here.ts`
+- `packages/path/to/File.ts` — What changed
+- `packages/other/Component.tsx` — What changed
 
 # Testing & QA
 
@@ -109,7 +156,16 @@ A concise summary of the architectural approach.
 - **Test Cases:** (List new or updated scenarios)
 ```
 
+**Style Rules for Markdown:**
+- Section headings use only `##` and `###` (no numbers)
+- Minor callouts use `####` and deeper (only when needed)
+- Use code blocks with location comments for code references
+- Always include Mermaid diagrams for architecture or flows
+
 # Constraints
 
 - Always use relative paths `~/Work/...` to ensure portability.
-- Ensure all Mermaid diagrams use the subgraph syntax to clearly separate repositories or extension contexts.
+- **Load `create-markdown` skill before any markdown output** — validate all generated markdown against the style guide
+- Ensure all Mermaid diagrams use the subgraph syntax to clearly separate repositories or extension contexts
+- **No numbered section headings, no `---` separators** — use only descriptive headings (H2/H3) to structure content
+- Never cite code locations as `file:line` in prose; show code snippets with location as inline comments instead

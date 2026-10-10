@@ -1,5 +1,5 @@
 ---
-title: mermaid-wizard
+name: mermaid-wizard
 description: Use this skill when the user asks to "visualize", "diagram", or "map out" code logic, system architecture, or data flows. It ensures Mermaid diagrams are syntactically correct and follow Nexthink's documentation standards.
 ---
 

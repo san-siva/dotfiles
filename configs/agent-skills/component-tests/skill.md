@@ -13,12 +13,16 @@ Steps to build and run Playwright component tests. This only applies to the `/Us
 ## 1. Build for Playwright
 
 ```sh
-# For Adopt V1
+# For Adopt V1 and AppEx tests
 npm run package:component-test:chrome:beta
 
 # For Adopt V2 (Default unless specified)
 npm run package:component-test:chrome:beta:shared-store
 ```
+
+> [!IMPORTANT]
+>
+> AppEx tests (`tests/appex-*`, tagged `@appex`) require `npm run package:component-test:chrome:beta`. Do not use the `shared-store` build for them.
 
 ## 2. Set up environment variables
 

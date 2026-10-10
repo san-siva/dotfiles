@@ -290,6 +290,32 @@ install_calc() {
 	fi
 }
 
+install_homebrew() {
+	if [ -x "/opt/homebrew/bin/brew" ]; then
+		echo 'Homebrew already installed'
+	else
+		echo 'Installing Homebrew'
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	fi
+
+	if ! [ -x "/opt/homebrew/bin/brew" ]; then
+		echo 'Homebrew installation failed. Aborting.'
+		exit 1
+	fi
+
+	# Put brew on PATH for the rest of this run; ~/.zshrc may not exist yet
+	eval "$(/opt/homebrew/bin/brew shellenv)"
+}
+
+install_bash() {
+	if [ -x "$(brew --prefix)/bin/bash" ]; then
+		echo 'bash already installed'
+	else
+		echo 'Installing bash'
+		brew install bash
+	fi
+}
+
 install_lua() {
 	if [ -n "$(command -v lua)" ]; then
 		echo 'lua already installed'
@@ -300,8 +326,9 @@ install_lua() {
 }
 
 update_ca_certificates() {
-	if [ -n "$(command -v brew)" ]; then
+	if [ -z "$(command -v brew)" ]; then
 		echo "Brew not found. Skipping update of CA certificates."
+		return
 	fi
 	brew install ca-certificates
 }
@@ -327,6 +354,8 @@ main() {
 	echo "Sankit"
 	echo ""
 
+	install_homebrew
+	install_bash
 	install_lua
 	install_python
 	install_neovim

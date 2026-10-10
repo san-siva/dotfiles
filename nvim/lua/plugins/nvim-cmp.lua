@@ -44,6 +44,8 @@ cmp.setup {
   },
   completion = { completeopt = 'menu,menuone,noinsert' },
   mapping = cmp.mapping.preset.insert {
+    -- <C-y> is minuet's accept-word (see minuet.lua); don't let the preset's confirm shadow it.
+    ['<C-y>'] = cmp.config.disable,
     ['<C-h>'] = cmp.mapping.close(),
     ['<C-l>'] = cmp.mapping(function(fallback)
       if cmp.visible() then

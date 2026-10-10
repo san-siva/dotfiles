@@ -38,7 +38,7 @@ All configuration lives under `~/.config`:
 | `git`                     | Version control                         |
 | `kitty`                   | Terminal emulator                       |
 | `zsh`                     | Primary shell                           |
-| `brew`                    | macOS package manager                   |
+| `brew`                    | macOS package manager — installed by `setup-environment` if missing |
 | `JetBrainsMono Nerd Font` | Font (all terminals + Neovim)           |
 
 ## Installation
@@ -60,7 +60,7 @@ Three setup scripts handle the full environment bootstrap. Run them in order, or
 
 ### setup-environment
 
-The top-level bootstrapper. Installs all system tools via Homebrew, then delegates to `install-global-deps` and `link-dotfiles`.
+The top-level bootstrapper. Installs Homebrew first if it is missing and puts it on PATH for the rest of the run, then installs all system tools and delegates to `install-global-deps` and `link-dotfiles`.
 
 ```bash
 ~/.config/bin/dev/setup/setup-environment
@@ -72,7 +72,7 @@ The top-level bootstrapper. Installs all system tools via Homebrew, then delegat
 | Java              | `openjdk`, `openjdk@21`, `ant`, `maven`, `jdtls`, `google-java-format`                          |
 | Editor / Terminal | `neovim`, `kitty`, `tmux` + TPM                                                                 |
 | Shell             | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`                                    |
-| CLI tools         | `ripgrep`, `fzf`, `fd`, `zoxide`, `jq`, `yq`, `gh`, `fish`, `deno`, `wget`, `tree`, `fastfetch` |
+| CLI tools         | `bash` 5, `ripgrep`, `fzf`, `fd`, `zoxide`, `jq`, `yq`, `gh`, `fish`, `deno`, `wget`, `tree`, `fastfetch` |
 | Formatters        | `black` (Python), `sqlfluff`, `shfmt` (via Go), `stylua` (via Cargo)                            |
 
 ### install-global-deps
@@ -113,12 +113,20 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
 | `configs/agent-skills`                     | `~/.claude/skills`        |
-| `configs/agent-skills`                     | `~/.gemini/skills`        |
+| `configs/agent-skills`                     | `~/.gemini/antigravity-cli/skills` |
 | `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
 >
 > Existing files at the target paths will be removed before linking. Back up any local changes first.
+
+### Create the local zshrc
+
+`link-dotfiles` doesn't create `~/.zshrc` — it's a machine-local file that holds secrets (see [Shell](#shell)). Create it once so new shells load the tracked config:
+
+```bash
+echo 'source ~/.config/configs/.zshrc' > ~/.zshrc
+```
 
 ## Neovim
 
@@ -243,6 +251,103 @@ nvim/
 >
 > **Monorepo TypeScript:** `ts_ls` walks up the directory tree to find the topmost directory containing both `tsconfig.json` and `node_modules` — works correctly in monorepos without per-project config.
 
+## Shell
+
+The Zsh config is split into three layers so the tracked parts stay portable and secrets never touch the repo.
+
+```mermaid
+graph LR
+  A["~/.zshrc<br/>untracked, machine-local"] -->|sources| B["configs/.zshrc<br/>tracked"]
+  B -->|sources first| C["configs/.zshrc_pre<br/>prompt + oh-my-zsh"]
+  B --> D["main()"]
+  A --> E["Secrets + local exports"]
+```
+
+| File                 | Tracked | Responsibility                                                               |
+| -------------------- | ------- | ---------------------------------------------------------------------------- |
+| `~/.zshrc`           | No      | One-line entry point plus machine-specific exports such as API tokens        |
+| `configs/.zshrc`     | Yes     | PATH, language toolchains, integrations, keybindings, aliases                |
+| `configs/.zshrc_pre` | Yes     | Catppuccin syntax highlighting, Powerlevel10k instant prompt, oh-my-zsh load |
+
+### Machine-local entry point
+
+`~/.zshrc` isn't symlinked. It's a plain file that sources the tracked config and then adds anything that must stay off GitHub:
+
+```bash
+# ~/.zshrc
+source ~/.config/configs/.zshrc
+
+# Secrets — not tracked in any repo
+export JIRA_API_TOKEN="..."
+export FIGMA_API_TOKEN="..."
+```
+
+> [!IMPORTANT]
+>
+> **Keep secrets in `~/.zshrc` only.** Everything under `~/.config` is pushed to a public repository.
+
+### One function per concern
+
+Instead of one long script, `configs/.zshrc` groups each concern into its own `setup_*` function, and a single `main()` calls them in order. Reordering, disabling, or debugging a step is a one-line change:
+
+```bash
+# configs/.zshrc
+main() {
+    setup_environment_variables
+    setup_homebrew_paths
+    setup_go_environment
+    setup_rust_environment
+    setup_ruby_environment
+    setup_python_environment
+    setup_java_environment
+    setup_custom_bins
+    setup_node_environment
+    setup_shell_integrations
+    setup_keybindings
+    setup_ssh_agent
+    setup_aliases
+}
+
+main
+```
+
+| Function                      | Responsibility                                                         |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `setup_environment_variables` | `TERM`, `EDITOR`, `VISUAL`                                             |
+| `setup_homebrew_paths`        | Homebrew `bin` / `sbin` and Rancher Desktop                            |
+| `setup_go_environment`        | `GOPATH` and `~/go/bin`                                                |
+| `setup_rust_environment`      | `~/.cargo/bin`                                                         |
+| `setup_ruby_environment`      | Homebrew Ruby, compiler flags, user gem bin                            |
+| `setup_python_environment`    | Python user-base `bin`                                                 |
+| `setup_java_environment`      | OpenJDK, Zulu 8, `JAVA_HOME`                                           |
+| `setup_custom_bins`           | `~/.local/bin`, `~/bin`, and the `bin/` script folders in this repo    |
+| `setup_node_environment`      | nvm, Yarn global bin, Zscaler CA for Node tooling                      |
+| `setup_shell_integrations`    | zoxide — runs after PATH is complete                                   |
+| `setup_keybindings`           | `^n` / `^p` completion, `^j` / `^k` history substring search           |
+| `setup_ssh_agent`             | Loads keys via `bin/dev/setup-ssh-agent`                               |
+| `setup_aliases`               | `sed` → `gsed`, gh copilot shortcuts, navigation aliases               |
+
+### Safe PATH handling
+
+PATH is built through two guarded helpers. A directory is only added if it exists, and `typeset -aU path` keeps entries unique, so re-sourcing the file never produces duplicates. The same config works on a machine that's missing some toolchains:
+
+```bash
+# configs/.zshrc
+typeset -aU path
+
+prepend_path() {
+    if [ -d "$1" ]; then
+        path=("$1" $path)
+    fi
+}
+
+append_path() {
+    if [ -d "$1" ]; then
+        path=($path "$1")
+    fi
+}
+```
+
 ## Terminal
 
 ### Kitty
@@ -284,6 +389,37 @@ Config at `configs/.tmux.conf` (symlinked to `~/.tmux.conf`). Uses [TPM](https:/
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Multi Account Setup | Personal and work profiles with separate SSH keys using `includeIf` and SSH host aliases — [blog post](https://santhoshsiva.dev/blog/the-ultimate-guide-to-managing-multiple-git-accounts-ssh-keys/) |
 | Gitsy               | Terminal UI for Git — log, diff, branch, and stash views — [gitsy.santhoshsiva.dev](https://gitsy.santhoshsiva.dev/?section=overview)                                                                |
+
+## Agent Skills
+
+A shared set of AI agent skills lives in `configs/agent-skills/`. `link-dotfiles` symlinks the same directory into both Claude Code (`~/.claude/skills`) and Antigravity CLI (`~/.gemini/antigravity-cli/skills`), so one edit updates both agents.
+
+```bash
+configs/agent-skills/
+├── <skill-name>/
+│   ├── SKILL.md       Frontmatter (name, description) + instructions
+│   └── references/    Optional supporting docs loaded on demand
+└── ...
+```
+
+| Skill                 | Description                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| `add-logs`            | Add log statements in the `SAN_SIVA` logging format                                 |
+| `analyze-jira-ticket` | Analyse a Jira ticket across the WebExtension ecosystem and plan the implementation |
+| `bash-scripts`        | Write bash scripts in the gitsy style — sourced utils, `set_flags` parsing, etc.    |
+| `branch-name`         | Suggest a git branch name for a Jira ticket                                         |
+| `commit-and-push`     | Suggest commit messages, pick one, then commit and push                             |
+| `commit-message`      | Suggest a Conventional Commits message for the staged changes                       |
+| `component-tests`     | Build and run Playwright component tests in `appex-adopt.extension`                 |
+| `create-markdown`     | Write markdown following a consistent style guide, including blogkit-md rules       |
+| `create-worktree`     | Create a git worktree using `g-wa`                                                  |
+| `document-progress`   | Record task progress into `~/Work/TASKS`                                            |
+| `gitsy`               | Perform Git operations through the gitsy CLI                                        |
+| `mermaid-wizard`      | Produce syntactically correct Mermaid diagrams for code, architecture, and flows    |
+
+> [!TIP]
+>
+> **Invoking skills:** User-invocable skills can be run directly as slash commands, e.g. `/commit-and-push`. Agents also pick them up automatically when a request matches the skill's description.
 
 ## Utility Scripts
 

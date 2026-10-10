@@ -102,7 +102,6 @@ build/
 *.rej
 
 # Temporary documentation files
-TASK*.md
 PROMPT*.md
 TODO*.md
 RUBBER_DUCK*.md
