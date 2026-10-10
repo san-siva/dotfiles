@@ -95,7 +95,7 @@ Installs all global npm packages, symlinks ESLint configs, and enables Corepack.
 
 ### link-dotfiles
 
-Creates symlinks from `~/.config/configs/` into the home directory. Removes any existing file or broken symlink at each target before linking.
+Creates symlinks from `~/.config/configs/` into the home directory using `ln -sfn`, so re-running it is safe: existing files and symlinks at each target are replaced in place. It also links private agent skills from `WORK_AGENT_SKILLS_DIR` when that variable is set — see [Private skills](#private-skills).
 
 ```bash
 ~/.config/bin/dev/setup/link-dotfiles
@@ -114,11 +114,12 @@ Creates symlinks from `~/.config/configs/` into the home directory. Removes any 
 | `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
 | `configs/agent-skills`                     | `~/.claude/skills`        |
 | `configs/agent-skills`                     | `~/.gemini/antigravity-cli/skills` |
+| `$WORK_AGENT_SKILLS_DIR/*`                 | `configs/agent-skills/<skill>` |
 | `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
 >
-> Existing files at the target paths will be removed before linking. Back up any local changes first.
+> Existing files and symlinks at the target paths are replaced. A real directory at a target is moved aside to `<target>.bak-<timestamp>` rather than deleted — review and remove these backups once you have checked their contents.
 
 ### Create the local zshrc
 
@@ -427,17 +428,26 @@ configs/agent-skills/
 | Skill                 | Description                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------- |
 | `add-logs`            | Add log statements in the `SAN_SIVA` logging format                                 |
-| `analyze-jira-ticket` | Analyse a Jira ticket across related repos and plan the implementation              |
 | `bash-scripts`        | Write bash scripts in the gitsy style — sourced utils, `set_flags` parsing, etc.    |
 | `branch-name`         | Suggest a git branch name for a Jira ticket                                         |
 | `commit-and-push`     | Suggest commit messages, pick one, then commit and push                             |
 | `commit-message`      | Suggest a Conventional Commits message for the staged changes                       |
-| `component-tests`     | Build and run Playwright component tests for a browser extension                    |
 | `create-markdown`     | Write markdown following a consistent style guide, including blogkit-md rules       |
 | `create-worktree`     | Create a git worktree using `g-wa`                                                  |
 | `document-progress`   | Record task progress into `~/Work/TASKS`                                            |
 | `gitsy`               | Perform Git operations through the gitsy CLI                                        |
 | `mermaid-wizard`      | Produce syntactically correct Mermaid diagrams for code, architecture, and flows    |
+
+### Private skills
+
+Work-specific skills live in a separate private repository, not here. `link-dotfiles` reads their location from `WORK_AGENT_SKILLS_DIR` — set in the untracked `~/.zshrc` — and symlinks each one into `configs/agent-skills/`, which is gitignored. If the variable is unset, the step is skipped.
+
+```bash
+# ~/.zshrc
+setup_env_vars() {
+    export WORK_AGENT_SKILLS_DIR="$HOME/path/to/private/agent-skills"
+}
+```
 
 > [!TIP]
 >

@@ -8,8 +8,13 @@
 
 link() {
 	local src=$1 dst=$2
-	[ -L "$dst" ] || [ -f "$dst" ] && rm -f "$dst"
-	ln -s "$src" "$dst"
+	if [ -d "$dst" ] && [ ! -L "$dst" ]; then
+		# ln -f can't replace a real directory; move it aside instead
+		local backup="${dst}.bak-$(date +%Y%m%d%H%M%S)"
+		echo "Moving existing directory $dst to $backup"
+		mv "$dst" "$backup"
+	fi
+	ln -sfn "$src" "$dst"
 }
 
 link_shell_configs() {
@@ -46,6 +51,19 @@ link_agent_skills() {
 
 	link ~/.config/configs/agent-skills ~/.claude/skills
 	link ~/.config/configs/agent-skills ~/.gemini/antigravity-cli/skills
+
+	link_work_agent_skills
+}
+
+# Private skills live outside this public repo; WORK_AGENT_SKILLS_DIR is set in ~/.zshrc.
+# Each one is linked into configs/agent-skills (gitignored) so both agents pick it up.
+link_work_agent_skills() {
+	if [ -z "$WORK_AGENT_SKILLS_DIR" ] || [ ! -d "$WORK_AGENT_SKILLS_DIR" ]; then
+		echo "WORK_AGENT_SKILLS_DIR not set or missing, skipping work agent skills"
+		return
+	fi
+
+	ln -sfn "$WORK_AGENT_SKILLS_DIR"/* ~/.config/configs/agent-skills/
 }
 
 link_antigravity_keybindings() {
