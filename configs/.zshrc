@@ -29,12 +29,9 @@ setup_environment_variables() {
 }
 
 setup_homebrew_paths() {
-    if [ -d "/opt/homebrew/bin" ]; then
-        prepend_path "/opt/homebrew/bin"
-    fi
-
-    if [ -d "/opt/homebrew/sbin" ]; then
-        prepend_path "/opt/homebrew/sbin"
+    # Sets PATH, HOMEBREW_PREFIX, MANPATH, and INFOPATH
+    if [ -x "/opt/homebrew/bin/brew" ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
 
     if [ -d "$HOME/.rd/bin" ]; then
