@@ -26,9 +26,10 @@ npm run package:component-test:chrome:beta:shared-store
 
 ## 2. Set up environment variables
 
-Create a `.env` file at `tests/adopt-tests/component-tests/.env`:
+Test account credentials live in `~/.zshrc` (never in this repo) as `WORKDAY_USER`, `WORKDAY_PASS`, `DAPDEV_USER`, `DAPDEV_PASS`, `USEAST2MAIN_USER`, and `USEAST2MAIN_PASS`. Generate `tests/adopt-tests/component-tests/.env` from them — the unquoted heredoc expands the shell variables:
 
-```txt
+```sh
+cat > tests/adopt-tests/component-tests/.env <<EOF
 Browser=chromium # chrome, edge or chromium
 ExtensionType=beta # beta or prod
 LogLevel=debug # debug, info, warn, error, silent
@@ -45,7 +46,12 @@ DAPDEV_PASS=$DAPDEV_PASS
 # Missing/blank values cause: "locator.fill: value: expected string, got undefined"
 USEAST2MAIN_USER=$USEAST2MAIN_USER
 USEAST2MAIN_PASS=$USEAST2MAIN_PASS
+EOF
 ```
+
+> [!WARNING]
+>
+> If any of these variables are unset, the generated `.env` will contain blank values. Check with `env | grep -E 'WORKDAY|DAPDEV|USEAST2MAIN' | cut -d= -f1` before running.
 
 ## 3. Run Playwright tests
 
