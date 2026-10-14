@@ -350,6 +350,18 @@ install_ollama() {
 	ollama pull qwen2.5-coder:1.5b
 }
 
+enable_atrun() {
+	if [ "$(uname)" != "Darwin" ]; then
+		return
+	fi
+	if launchctl print system/com.apple.atrun >/dev/null 2>&1; then
+		echo 'atrun already enabled'
+	else
+		echo 'Enabling atrun (needed for the at command)'
+		sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
+	fi
+}
+
 main() {
 	echo "Sankit"
 	echo ""
@@ -378,6 +390,7 @@ main() {
 	install_tree
 	install_ollama
 	update_ca_certificates
+	enable_atrun
 
 	echo ""
 	echo "Running install-global-deps..."
