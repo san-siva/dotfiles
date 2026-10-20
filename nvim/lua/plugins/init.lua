@@ -7,7 +7,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
-  'norcalli/nvim-colorizer.lua',
+  'catgoose/nvim-colorizer.lua',
   { 'numToStr/Comment.nvim', opts = {} },
   'lewis6991/gitsigns.nvim',
   {
