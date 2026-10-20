@@ -152,6 +152,13 @@ require('lazy').setup({
     'milanglacier/minuet-ai.nvim',
     dependencies = { 'nvim-lua/plenary.nvim' },
   },
+  {
+    'olimorris/codecompanion.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
 }, {
   ui = {
     icons = vim.g.have_nerd_font and {} or {
@@ -183,6 +190,7 @@ require 'plugins.conform'
 require 'plugins.tree'
 -- require 'plugins.copilot'
 require 'plugins.minuet'
+require 'plugins.codecompanion'
 require 'plugins.lualine'
 require 'plugins.catppuccin'
 require 'plugins.fugitive'
