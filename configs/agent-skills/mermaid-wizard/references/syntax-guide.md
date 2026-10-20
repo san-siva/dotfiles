@@ -66,6 +66,7 @@ classDef green fill:#ccffcc,stroke:#000,stroke-width:2px,color:#000000;
 classDef red fill:#ffcccc,stroke:#000,stroke-width:2px,color:#000000;
 classDef blue fill:#ccccff,stroke:#000,stroke-width:2px,color:#000000;
 classDef orange fill:#ffcc99,stroke:#000,stroke-width:2px,color:#000000;
+classDef next fill:#ffffff,stroke:#000,stroke-width:1px,stroke-dasharray: 3 3,color:#000000;
 classDef note fill:#fef9c3,stroke:#ca8a04,stroke-width:1px,stroke-dasharray: 5 5,color:#333;
 ```
 
@@ -75,6 +76,7 @@ classDef note fill:#fef9c3,stroke:#ca8a04,stroke-width:1px,stroke-dasharray: 5 5
 | `red`    | Error states, failures, rejections, removals or deletions                |
 | `blue`   | Primary services, entry points, user-facing                              |
 | `orange` | Warnings, intermediate states, in-progress, change                       |
+| `next`   | Hand-off node: where a split diagram continues or picks up (see Hand-off Nodes) |
 | `note`   | Annotations that explain a node (flowcharts have no native notes)        |
 
 ### Notes in Flowcharts
@@ -132,6 +134,33 @@ graph TD
 ```
 
 > **Tip:** You can also apply a class inline using `:::` syntax: `NodeID[Label]:::className`
+
+### Hand-off Nodes
+
+When one diagram is split into several parts, mark where the flow leaves or enters a part with a hand-off node: white fill, thin dashed border (the `next` class). It reads as "this step is drawn elsewhere", so it is never mistaken for a step of the current diagram.
+
+- Use it for the **exit** at the end of a part (named for the next part's first step) and for the **entry** at the start of a part (named for the previous part's last step, or the step being continued).
+- Label it with the name of the step it points to, exactly as that step is labelled in the other diagram, so the reader can find it.
+- Do not use it for a step that belongs to this diagram, and do not combine it with a color class.
+- Say in the text before the first part that a dashed block is where the flow continues in the next part.
+
+```mermaid
+graph LR
+    classDef orange fill:#ffcc99,stroke:#000,stroke-width:2px,color:#000000;
+    classDef red fill:#fecaca,stroke:#000,stroke-width:2px,color:#000000;
+    classDef next fill:#ffffff,stroke:#000,stroke-width:1px,stroke-dasharray: 3 3,color:#000000;
+
+    Send["Send prompt"]:::orange
+    Check["Shape check"]
+    Failed["Call failed"]:::red
+    Next["Proof of work"]:::next
+
+    Send --> Check
+    Check -->|"unusable"| Failed
+    Check -->|"ok"| Next
+```
+
+A hand-off node can also be the target of a loop back to a step drawn in another part, as `Send["Send prompt"]:::next` is in the second part of the README this style came from.
 
 ---
 
