@@ -21,7 +21,7 @@ All configuration lives under `~/.config`:
 | `kitty/`   | Kitty terminal — fonts, theme, window settings                 |
 | `fish/`    | Fish shell — minimal PATH additions                            |
 | `configs/` | Home-dir dotfiles (`.zshrc`, `.gitconfig`, `.tmux.conf`, etc.) |
-| `bin/`     | Shell utility scripts (`android/`, `dev/`, `utils.sh`)         |
+| `bin/`     | Shell utility scripts (`android/`, `setup/`, `tools/`, `common/`, `utils.sh`) |
 | `git/`     | Global git config and gitignore                                |
 | `assets/`  | Screenshots, patched fonts, theme files                        |
 
@@ -56,66 +56,59 @@ git remote add origin https://github.com/san-siva/dotfiles
 git pull origin main
 ```
 
-Three setup scripts handle the full environment bootstrap. Run them in order, or use `setup-environment` to run all three at once.
+The environment bootstrap is split into one script per tool in `bin/setup/`. Run `setup-environment` to run them all in order, or run any script on its own. All of them are safe to re-run.
 
 ### setup-environment
 
-The top-level bootstrapper. Installs Homebrew first if it is missing and puts it on PATH for the rest of the run, then installs all system tools and delegates to `install-global-deps` and `link-dotfiles`.
+The top-level bootstrapper. Runs `setup-homebrew` first (and stops if it fails, since everything else needs brew), then every script below, ending with `setup-neovim`, `setup-claude`, `setup-antigravity`, `setup-git` and `setup-ssh`.
 
 ```bash
-~/.config/bin/dev/setup/setup-environment
+~/.config/bin/setup/setup-environment
 ```
 
-| Category          | Installs                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------- |
-| Languages         | `python3`, `node` (via nvm), `ruby`, `go`, `lua`, `rust`                                        |
-| Java              | `openjdk`, `openjdk@21`, `ant`, `maven`, `jdtls`, `google-java-format`                          |
-| Editor / Terminal | `neovim`, `kitty`, `tmux` + TPM                                                                 |
-| Shell             | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`                                    |
-| CLI tools         | `bash` 5, `ripgrep`, `fzf`, `fd`, `zoxide`, `jq`, `yq`, `gh`, `fish`, `deno`, `wget`, `tree`, `fastfetch` |
-| Formatters        | `black` (Python), `sqlfluff`, `shfmt` (via Go), `stylua` (via Cargo)                            |
+| Script           | Installs                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `setup-homebrew` | Homebrew, `ca-certificates`                                                                                |
+| `setup-bash`     | `bash` 5                                                                                                   |
+| `setup-lua`      | `lua`, `luarocks`                                                                                          |
+| `setup-python`   | `python3`, `sqlfluff`                                                                                      |
+| `setup-node`     | `node` (via nvm), `yarn`, Corepack, global npm tools (`jest`, `typescript`, ...), ESLint + configs, Prettier + config |
+| `setup-ruby`     | `ruby`                                                                                                     |
+| `setup-rust`     | `rust`                                                                                                     |
+| `setup-go`       | `go`, `dlv`                                                                                                |
+| `setup-java`     | `openjdk`, `openjdk@21`, `ant`, `maven`                                                                    |
+| `setup-tmux`     | `tmux` + TPM                                                                                               |
+| `setup-kitty`    | `kitty`                                                                                                    |
+| `setup-shell`    | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`, `fish`, `fzf`, `zoxide`, `moreutils`, `tree`, `fastfetch`, `figlet`, `lolcat`, `cmatrix`, `deno`, `mkcert`, `jq`, `yq`, `gh`, `wget`, `calc` |
+| `setup-kubectl`  | `kubectl`, `flux`                                                                                          |
+| `setup-neovim`   | `neovim`, `ripgrep`, `fd`, `tree-sitter-cli`, formatters, `jdtls`, language providers, `ollama`            |
+| `setup-claude`   | Claude Code, `chrome-devtools-mcp`, agent skills                                                           |
+| `setup-antigravity` | Antigravity CLI skills and keybindings                                                                  |
+| `setup-gitsy`    | `gitsy` (Git workflow utilities)                                                                           |
+| `setup-blogkit`  | `blogkit-md` CLI                                                                                           |
+| `setup-git`      | git config                                                                                                 |
+| `setup-ssh`      | ssh config                                                                                                 |
 
-### install-global-deps
+Shared helpers (`brew_install`, `npm_install`, `load_brew`, `load_nvm`) live in `bin/common/` (`brew.sh`, `node.sh`, `fs.sh`, ...).
 
-Installs all global npm packages, symlinks ESLint configs, and enables Corepack. Safe to re-run.
+### Dotfile symlinks
 
-```bash
-~/.config/bin/dev/setup/install-global-deps
-```
+Each setup script links its own config from `~/.config/configs/` using `ln -sfn` (the `link` helper in `bin/common/fs.sh`), so re-running is safe: existing files and symlinks at each target are replaced in place. `setup-git`, `setup-ssh` and `setup-antigravity` only link configs.
 
-| Category       | Packages                                                                                                             |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| ESLint core    | `eslint`, `eslint_d`, `jiti`, `@eslint/js`, `@eslint/eslintrc`, `@eslint/compat`                                     |
-| ESLint plugins | `eslint-plugin-react`, `-react-hooks`, `-jest`, `-import`, `-redux-saga`, `-unicorn`, `simple-import-sort`, and more |
-| TypeScript     | `typescript`, `typescript-eslint`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`                   |
-| Prettier       | `prettier`, `eslint-config-prettier`                                                                                 |
-| Testing        | `jest`, `markdownlint-cli2`                                                                                          |
-| Tools          | `@san-siva/gitsy`, `@anthropic-ai/claude-code`, `local-ssl-proxy`, `neovim` (npm provider)                           |
-| ESLint configs | Symlinks `eslint.config.ts` and `eslint-utilities.ts` into the npm global prefix                                     |
-
-### link-dotfiles
-
-Creates symlinks from `~/.config/configs/` into the home directory using `ln -sfn`, so re-running it is safe: existing files and symlinks at each target are replaced in place. It also links private agent skills from `WORK_AGENT_SKILLS_DIR` when that variable is set — see [Private skills](#private-skills).
-
-```bash
-~/.config/bin/dev/setup/link-dotfiles
-```
-
-| Source                                     | Symlinked to              |
-| ------------------------------------------ | ------------------------- |
-| `configs/.tmux.conf`                       | `~/.tmux.conf`            |
-| `configs/.prettierrc.json`                 | `~/.prettierrc.json`      |
-| `configs/.eslintrc.json`                   | `~/.eslintrc.json`        |
-| `configs/.p10k.zsh`                        | `~/.p10k.zsh`             |
-| `configs/.gitconfig`                       | `~/.gitconfig`            |
-| `configs/.gitconfig__wrk`                  | `~/.gitconfig__wrk`       |
-| `configs/ssh_config`                       | `~/.ssh/config`           |
-| `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
-| `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
-| `configs/agent-skills`                     | `~/.claude/skills`        |
-| `configs/agent-skills`                     | `~/.gemini/antigravity-cli/skills` |
-| `$WORK_AGENT_SKILLS_DIR/*`                 | `configs/agent-skills/<skill>` |
-| `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
+| Script              | Source                                  | Symlinked to                                 |
+| ------------------- | --------------------------------------- | -------------------------------------------- |
+| `setup-tmux`        | `configs/.tmux.conf`                    | `~/.tmux.conf`                               |
+| `setup-shell`       | `configs/.p10k.zsh`                     | `~/.p10k.zsh`                                |
+| `setup-neovim`      | `configs/.vimrc`                        | `~/.vimrc`                                   |
+| `setup-node`        | `configs/.eslintrc.json`                | `~/.eslintrc.json`                           |
+| `setup-node`        | `configs/.prettierrc.json`              | `~/.prettierrc.json`                         |
+| `setup-git`         | `configs/.gitconfig`, `.gitconfig__wrk`, `.gitignore__global` | `~/`                   |
+| `setup-ssh`         | `configs/ssh_config`                    | `~/.ssh/config`                              |
+| `setup-java`        | `configs/eclipse-java-google-style.xml`, `lombok.jar` | `~/.local/share/eclipse/`      |
+| `setup-claude`      | `configs/agent-skills`                  | `~/.claude/skills`                           |
+| `setup-claude`      | `$WORK_AGENT_SKILLS_DIR/*`              | `configs/agent-skills/<skill>`               |
+| `setup-antigravity` | `configs/agent-skills`                  | `~/.gemini/antigravity-cli/skills`           |
+| `setup-antigravity` | `configs/antigravity-keybindings.json`  | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
 >
@@ -123,7 +116,7 @@ Creates symlinks from `~/.config/configs/` into the home directory using `ln -sf
 
 ### Create the local zshrc
 
-`link-dotfiles` doesn't create `~/.zshrc` — it's a machine-local file that holds secrets (see [Shell](#shell)). Create it once so new shells load the tracked config:
+The setup scripts don't create `~/.zshrc` — it's a machine-local file that holds secrets (see [Shell](#shell)). Create it once so new shells load the tracked config:
 
 ```bash
 echo 'source ~/.config/configs/.zshrc' > ~/.zshrc
@@ -347,7 +340,7 @@ main
 | `setup_node_environment`      | nvm, Yarn global bin, Zscaler CA for Node tooling                      |
 | `setup_shell_integrations`    | zoxide — runs after PATH is complete                                   |
 | `setup_keybindings`           | `^n` / `^p` completion, `^j` / `^k` history substring search           |
-| `setup_ssh_agent`             | Loads keys via `bin/dev/setup-ssh-agent`                               |
+| `setup_ssh_agent`             | Loads keys via `bin/setup/setup-ssh`                               |
 | `setup_aliases`               | `sed` → `gsed`, gh copilot shortcuts, navigation aliases               |
 
 ### Safe PATH handling
@@ -415,7 +408,7 @@ Config at `configs/.tmux.conf` (symlinked to `~/.tmux.conf`). Uses [TPM](https:/
 
 ## Agent Skills
 
-A shared set of AI agent skills lives in `configs/agent-skills/`. `link-dotfiles` symlinks the same directory into both Claude Code (`~/.claude/skills`) and Antigravity CLI (`~/.gemini/antigravity-cli/skills`), so one edit updates both agents.
+A shared set of AI agent skills lives in `configs/agent-skills/`. `setup-claude` and `setup-antigravity` symlink the same directory into both Claude Code (`~/.claude/skills`) and Antigravity CLI (`~/.gemini/antigravity-cli/skills`), so one edit updates both agents.
 
 ```bash
 configs/agent-skills/
@@ -440,7 +433,7 @@ configs/agent-skills/
 
 ### Private skills
 
-Work-specific skills live in a separate private repository, not here. `link-dotfiles` reads their location from `WORK_AGENT_SKILLS_DIR` — set in the untracked `~/.zshrc` — and symlinks each one into `configs/agent-skills/`, which is gitignored. If the variable is unset, the step is skipped.
+Work-specific skills live in a separate private repository, not here. `setup-claude` reads their location from `WORK_AGENT_SKILLS_DIR` — set in the untracked `~/.zshrc` — and symlinks each one into `configs/agent-skills/`, which is gitignored. If the variable is unset, the step is skipped.
 
 ```bash
 # ~/.zshrc
@@ -455,7 +448,7 @@ setup_env_vars() {
 
 ## Utility Scripts
 
-All scripts in `bin/` are on PATH and share a common utility library at `bin/utils.sh`.
+All scripts in `bin/` are on PATH and share a common utility library in `bin/common/`, loaded by sourcing `bin/utils.sh`.
 
 | Script                    | Category | Description                                    |
 | ------------------------- | -------- | ---------------------------------------------- |
@@ -464,9 +457,8 @@ All scripts in `bin/` are on PATH and share a common utility library at `bin/uti
 | `adb-reverse <port>`      | Android  | Reverse a port (e.g. Metro bundler)            |
 | `adb-uninstall <package>` | Android  | Uninstall a package by name                    |
 | `kill-port <port>`        | Dev      | Kill the process listening on a given port     |
-| `setup-ssh-agent`         | Dev      | Load SSH key into the running agent            |
+| `setup-ssh`               | Dev      | Link the ssh config; sourced by `~/.zshrc` to load SSH keys into the agent |
 | `pwdc`                    | Dev      | Print current working directory (clean output) |
-| `reinstall-claude`        | Dev      | Reinstall Claude Code CLI tool                 |
 | `reinstall-npm-pkg <pkg> [version]` | Dev | Reinstall/upgrade any global npm package |
 
 ## Assets

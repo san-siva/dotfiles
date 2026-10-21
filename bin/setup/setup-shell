@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Oh My Zsh, powerlevel10k and the zsh plugins.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_oh_my_zsh() {
+	if [ -d "$HOME/.oh-my-zsh" ]; then
+		echo 'Oh My Zsh already installed'
+	else
+		echo 'Installing Oh My Zsh'
+		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+	fi
+
+	# Install powerlevel10k theme for Oh My Zsh
+	if [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+		echo 'powerlevel10k theme already installed'
+	else
+		echo 'Installing powerlevel10k theme'
+		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+	fi
+
+	# Install powerlevel10k standalone (for direct sourcing)
+	if [ -d "$HOME/powerlevel10k" ]; then
+		echo 'powerlevel10k standalone already installed'
+	else
+		echo 'Installing powerlevel10k standalone'
+		git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+	fi
+
+	# Install zsh-history-substring-search plugin
+	if [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search" ]; then
+		echo 'zsh-history-substring-search already installed'
+	else
+		echo 'Installing zsh-history-substring-search'
+		git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+	fi
+}
+
+install_shell_tools() {
+	brew_install fish
+	brew_install fzf
+	brew_install zoxide
+	brew_install sponge moreutils
+	brew_install tree
+
+	# Terminal eye candy
+	brew_install fastfetch
+	brew_install figlet
+	brew_install lolcat
+	brew_install cmatrix
+}
+
+enable_atrun() {
+	if [ "$(uname)" != "Darwin" ]; then
+		return
+	fi
+	if launchctl print system/com.apple.atrun >/dev/null 2>&1; then
+		echo 'atrun already enabled'
+	else
+		echo 'Enabling atrun (needed for the at command)'
+		sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
+	fi
+}
+
+install_dev_tools() {
+	brew_install deno
+	brew_install mkcert
+	brew_install jq
+	brew_install yq
+	brew_install gh
+	brew_install wget
+	brew_install calc
+
+	# Library used by mkcert for Firefox trust stores, it has no command to check for
+	brew install nss
+
+	# Optional: Uncomment to setup mkcert
+	# mkcert -install
+	# mkcert localhost
+}
+
+link_shell_config() {
+	link ~/.config/configs/.p10k.zsh ~/.p10k.zsh
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_oh_my_zsh
+	install_shell_tools
+	install_dev_tools
+	enable_atrun
+	link_shell_config
+}
+
+main "$@"
+exit 0

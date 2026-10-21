@@ -23,7 +23,10 @@ append_path() {
 }
 
 setup_environment_variables() {
-    export TERM='xterm-256color'
+    # tmux sets its own TERM (see default-terminal in .tmux.conf); overriding it breaks neovim checkhealth
+    if [ -z "$TMUX" ]; then
+        export TERM='xterm-256color'
+    fi
     export EDITOR='nvim'
     export VISUAL='nvim'
 }
@@ -113,11 +116,11 @@ setup_node_environment() {
         append_path "$(yarn global bin)"
     fi
 
-    # Trust the Zscaler TLS-interception CA for Node/Bun tooling (see bin/dev/zscalar_fix.sh)
+    # Trust the Zscaler TLS-interception CA for Node/Bun tooling (see bin/tools/zscalar-fix.sh)
     if [ -f "$HOME/.certs/zscaler-ca.crt" ]; then
         export NODE_EXTRA_CA_CERTS="$HOME/.certs/zscaler-ca.crt"
     else
-        echo "Warning: Zscaler CA not found. Run: $HOME/.config/bin/dev/zscalar_fix.sh"
+        echo "Warning: Zscaler CA not found. Run: $HOME/.config/bin/tools/zscalar-fix.sh"
     fi
 }
 
@@ -132,8 +135,8 @@ setup_custom_bins() {
 
     if [ -d "$HOME/.config/bin" ]; then
         append_path "$HOME/.config/bin/android"
-        append_path "$HOME/.config/bin/dev"
-        append_path "$HOME/.config/bin/dev/setup"
+        append_path "$HOME/.config/bin/setup"
+        append_path "$HOME/.config/bin/tools"
         append_path "$HOME/.config/bin/kubectl"
     fi
 
@@ -159,8 +162,8 @@ setup_keybindings() {
 }
 
 setup_ssh_agent() {
-    if [ -f ~/.config/bin/dev/setup-ssh-agent ]; then
-        source ~/.config/bin/dev/setup-ssh-agent
+    if [ -f ~/.config/bin/setup/setup-ssh ]; then
+        source ~/.config/bin/setup/setup-ssh
     fi
 }
 

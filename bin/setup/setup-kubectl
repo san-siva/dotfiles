@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs the Kubernetes command line tooling.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_kubectl() {
+	brew_install kubectl kubernetes-cli
+}
+
+install_flux() {
+	# Flux CD (Kubernetes GitOps tooling)
+	brew_install flux fluxcd/tap/flux
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_kubectl
+	install_flux
+}
+
+main "$@"
+exit 0

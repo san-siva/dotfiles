@@ -8,14 +8,11 @@ git init
 git remote add origin https://github.com/san-siva/dotfiles
 git pull origin main`;
 
-const linkDotfiles = `# Symlink dotfiles to your home directory
-~/.config/bin/dev/setup/link-dotfiles
-
-# Install global npm/yarn dependencies
-~/.config/bin/dev/setup/install-global-deps
+const linkDotfiles = `# Set up a single tool (each script also links its own config)
+~/.config/bin/setup/setup-tmux
 
 # Set up the full environment (runs all setup scripts)
-~/.config/bin/dev/setup/setup-environment`;
+~/.config/bin/setup/setup-environment`;
 
 // Neovim
 const nvimFolderStructure = `nvim/

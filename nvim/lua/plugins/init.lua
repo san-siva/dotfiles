@@ -19,7 +19,7 @@ require('lazy').setup({
   {
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    branch = 'master', -- 0.1.x calls the removed nvim-treesitter ft_to_lang API
     dependencies = {
       'nvim-lua/plenary.nvim',
       {

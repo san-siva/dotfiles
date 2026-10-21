@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Homebrew and puts it on the PATH.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_homebrew() {
+	if [ -x "/opt/homebrew/bin/brew" ]; then
+		echo 'Homebrew already installed'
+	else
+		echo 'Installing Homebrew'
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	fi
+
+	if ! [ -x "/opt/homebrew/bin/brew" ]; then
+		echo 'Homebrew installation failed. Aborting.'
+		exit 1
+	fi
+
+	# Put brew on PATH for the rest of this run; ~/.zshrc may not exist yet
+	eval "$(/opt/homebrew/bin/brew shellenv)"
+}
+
+update_ca_certificates() {
+	if [ -z "$(command -v brew)" ]; then
+		echo "Brew not found. Skipping update of CA certificates."
+		return
+	fi
+	brew install ca-certificates
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	install_homebrew
+	update_ca_certificates
+}
+
+main "$@"
+exit 0

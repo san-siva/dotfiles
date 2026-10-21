@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs the JDKs, Ant and Maven.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_java() {
+	if [ -n "$(command -v java)" ]; then
+		echo 'Java already installed'
+	else
+		echo 'Installing Java'
+		brew install java
+		sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+	fi
+	if ! [ -d '/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home' ]; then
+		echo 'Creating Java 21'
+		brew install openjdk@21
+		sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk
+	fi
+}
+
+install_java_packages() {
+	brew_install ant
+	brew_install mvn maven
+	if ! [ -d "$HOME/.local/" ]; then
+		echo 'Creating .local directory'
+		mkdir $HOME/.local
+	fi
+	if ! [ -d "$HOME/.local/share/" ]; then
+		echo 'Creating .local/share directory'
+		mkdir $HOME/.local/share
+	fi
+	if ! [ -d "$HOME/.local/share/eclipse/" ]; then
+		echo 'Creating .local/share/eclipse directory'
+		mkdir $HOME/.local/share/eclipse
+	fi
+}
+
+link_eclipse_configs() {
+	link ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
+	link ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_java
+	install_java_packages
+	link_eclipse_configs
+}
+
+main "$@"
+exit 0

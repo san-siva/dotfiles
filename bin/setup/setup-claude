@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Claude Code, the MCP servers it uses and links the agent skills.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_claude_code() {
+	if [ -n "$(command -v claude)" ]; then
+		echo 'Claude Code already installed'
+	else
+		echo 'Installing Claude Code'
+		npm_install @anthropic-ai/claude-code
+	fi
+}
+
+install_mcp_servers() {
+	# Used by the chrome-devtools MCP server
+	npm_install chrome-devtools-mcp
+}
+
+link_agent_skills() {
+	link ~/.config/configs/agent-skills ~/.claude/skills
+
+	link_work_agent_skills
+}
+
+# Private skills live outside this public repo; WORK_AGENT_SKILLS_DIR is set in ~/.zshrc.
+# Each one is linked into configs/agent-skills (gitignored) so both agents pick it up.
+link_work_agent_skills() {
+	if [ -z "$WORK_AGENT_SKILLS_DIR" ] || [ ! -d "$WORK_AGENT_SKILLS_DIR" ]; then
+		echo "WORK_AGENT_SKILLS_DIR not set or missing, skipping work agent skills"
+		return
+	fi
+
+	ln -sfn "$WORK_AGENT_SKILLS_DIR"/* ~/.config/configs/agent-skills/
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+
+	install_claude_code
+	install_mcp_servers
+	link_agent_skills
+}
+
+main "$@"
+exit 0

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Links the agent skills and keybindings into the Antigravity CLI.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+link_agent_skills() {
+	link ~/.config/configs/agent-skills ~/.gemini/antigravity-cli/skills
+}
+
+link_antigravity_keybindings() {
+	link ~/.config/configs/antigravity-keybindings.json ~/.gemini/antigravity-cli/keybindings.json
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	link_agent_skills
+	link_antigravity_keybindings
+}
+
+main "$@"
+exit 0

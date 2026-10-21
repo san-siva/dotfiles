@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs the kitty terminal.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_kitty() {
+	brew_install kitty kitty --cask
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_kitty
+}
+
+main "$@"
+exit 0

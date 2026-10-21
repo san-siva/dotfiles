@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Runs every setup script in order. Each script can also be run on its own.
+
+run_step() {
+	echo ""
+	echo "Running $1..."
+	bash "$(dirname "$0")/$1"
+}
+
+setup_core() {
+	# Everything else needs brew, so stop here if it fails
+	run_step setup-homebrew || exit 1
+
+	run_step setup-bash
+	run_step setup-lua
+}
+
+setup_languages() {
+	run_step setup-python
+	run_step setup-node
+	run_step setup-ruby
+	run_step setup-rust
+	run_step setup-java
+	run_step setup-go
+}
+
+setup_terminal() {
+	run_step setup-tmux
+	run_step setup-kitty
+	run_step setup-shell
+	run_step setup-kubectl
+}
+
+setup_editors() {
+	run_step setup-neovim
+}
+
+setup_agents() {
+	run_step setup-claude
+	run_step setup-antigravity
+}
+
+setup_personal_tools() {
+	run_step setup-gitsy
+	run_step setup-blogkit
+}
+
+setup_configs() {
+	run_step setup-git
+	run_step setup-ssh
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	setup_core
+	setup_languages
+	setup_terminal
+	setup_editors
+	setup_agents
+	setup_personal_tools
+	setup_configs
+}
+
+main "$@"
+exit 0

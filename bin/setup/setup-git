@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Links the git config files.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+link_git_configs() {
+	link ~/.config/configs/.gitconfig ~/.gitconfig
+	link ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
+	link ~/.config/configs/.gitignore__global ~/.gitignore__global
+	git config --global core.excludesfile ~/.gitignore__global
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	link_git_configs
+}
+
+main "$@"
+exit 0
