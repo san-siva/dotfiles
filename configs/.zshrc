@@ -6,8 +6,6 @@
 # Main Zsh configuration file for development environment setup
 # Configures PATH, environment variables, keybindings, and aliases
 
-source ~/.config/configs/.zshrc_pre
-
 typeset -aU path
 
 prepend_path() {
@@ -20,6 +18,36 @@ append_path() {
     if [ -d "$1" ]; then
         path=($path "$1")
     fi
+}
+
+setup_prompt() {
+    source $HOME/.config/assets/catppuccin_frappe-zsh-syntax-highlighting.zsh
+
+    if [ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]; then
+        source ~/powerlevel10k/powerlevel10k.zsh-theme
+    fi
+
+    # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+    [[ ! -f ~/.config/configs/.p10k.zsh ]] || source ~/.config/configs/.p10k.zsh
+}
+
+setup_instant_prompt() {
+    if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+        source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    fi
+}
+
+setup_oh_my_zsh() {
+    export ZSH="$HOME/.oh-my-zsh"
+    ZSH_THEME="powerlevel10k/powerlevel10k"
+
+    plugins=(
+        git
+        zsh-history-substring-search
+    )
+
+    source $ZSH/oh-my-zsh.sh
+    [[ ! -f ~/.config/configs/.p10k.zsh ]] || source ~/.config/configs/.p10k.zsh
 }
 
 setup_environment_variables() {
@@ -170,8 +198,6 @@ setup_ssh_agent() {
 setup_aliases() {
     # Tool aliases
     alias sed='gsed'
-    alias gcs='gh copilot suggest'
-    alias gce='gh copilot explain'
 
     # Navigation aliases
     alias g3_config='cd ~/.config'
@@ -180,6 +206,9 @@ setup_aliases() {
 }
 
 main() {
+    setup_prompt
+    setup_instant_prompt
+    setup_oh_my_zsh
     setup_environment_variables
     setup_homebrew_paths
     setup_go_environment

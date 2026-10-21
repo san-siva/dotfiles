@@ -247,21 +247,19 @@ nvim/
 
 ## Shell
 
-The Zsh config is split into three layers so the tracked parts stay portable and secrets never touch the repo.
+The Zsh config is split into two layers so the tracked parts stay portable and secrets never touch the repo.
 
 ```mermaid
 graph LR
   A["~/.zshrc<br/>untracked, machine-local"] -->|sources| B["configs/.zshrc<br/>tracked"]
-  B -->|sources first| C["configs/.zshrc_pre<br/>prompt + oh-my-zsh"]
-  B --> D["main()"]
-  A --> E["main_local()<br/>secrets + local setup"]
+  B --> C["main()<br/>prompt, oh-my-zsh, PATH, aliases"]
+  A --> D["main_local()<br/>secrets + local setup"]
 ```
 
 | File                 | Tracked | Responsibility                                                               |
 | -------------------- | ------- | ---------------------------------------------------------------------------- |
 | `~/.zshrc`           | No      | Entry point plus machine-local `setup_*` functions for secrets and tooling   |
-| `configs/.zshrc`     | Yes     | PATH, language toolchains, integrations, keybindings, aliases                |
-| `configs/.zshrc_pre` | Yes     | Catppuccin syntax highlighting, Powerlevel10k instant prompt, oh-my-zsh load |
+| `configs/.zshrc`     | Yes     | Prompt (Catppuccin, Powerlevel10k, oh-my-zsh), PATH, toolchains, keybindings, aliases |
 
 ### Machine-local entry point
 
@@ -341,7 +339,7 @@ main
 | `setup_shell_integrations`    | zoxide — runs after PATH is complete                                   |
 | `setup_keybindings`           | `^n` / `^p` completion, `^j` / `^k` history substring search           |
 | `setup_ssh_agent`             | Loads keys via `bin/setup/setup-ssh`                               |
-| `setup_aliases`               | `sed` → `gsed`, gh copilot shortcuts, navigation aliases               |
+| `setup_aliases`               | `sed` → `gsed`, navigation aliases               |
 
 ### Safe PATH handling
 
