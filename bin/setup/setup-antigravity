@@ -9,11 +9,11 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
 
 link_agent_skills() {
-	link ~/.config/configs/agent-skills ~/.gemini/antigravity-cli/skills
+	link ~/.config/configs/agents/agent-skills ~/.gemini/antigravity-cli/skills
 }
 
 link_antigravity_keybindings() {
-	link ~/.config/configs/antigravity-keybindings.json ~/.gemini/antigravity-cli/keybindings.json
+	link ~/.config/configs/agents/antigravity-keybindings.json ~/.gemini/antigravity-cli/keybindings.json
 }
 
 main() {

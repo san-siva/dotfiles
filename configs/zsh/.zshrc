@@ -28,7 +28,7 @@ setup_prompt() {
     fi
 
     # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-    [[ ! -f ~/.config/configs/.p10k.zsh ]] || source ~/.config/configs/.p10k.zsh
+    [[ ! -f ~/.config/configs/zsh/.p10k.zsh ]] || source ~/.config/configs/zsh/.p10k.zsh
 }
 
 setup_instant_prompt() {
@@ -47,7 +47,7 @@ setup_oh_my_zsh() {
     )
 
     source $ZSH/oh-my-zsh.sh
-    [[ ! -f ~/.config/configs/.p10k.zsh ]] || source ~/.config/configs/.p10k.zsh
+    [[ ! -f ~/.config/configs/zsh/.p10k.zsh ]] || source ~/.config/configs/zsh/.p10k.zsh
 }
 
 setup_environment_variables() {

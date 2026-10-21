@@ -41,8 +41,8 @@ install_java_packages() {
 }
 
 link_eclipse_configs() {
-	link ~/.config/configs/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
-	link ~/.config/configs/lombok.jar ~/.local/share/eclipse/lombok.jar
+	link ~/.config/configs/java/eclipse-java-google-style.xml ~/.local/share/eclipse/eclipse-java-google-style.xml
+	link ~/.config/configs/java/lombok.jar ~/.local/share/eclipse/lombok.jar
 }
 
 main() {

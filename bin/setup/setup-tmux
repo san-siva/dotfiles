@@ -20,7 +20,7 @@ install_tmux() {
 }
 
 link_tmux_config() {
-	link ~/.config/configs/.tmux.conf ~/.tmux.conf
+	link ~/.config/configs/tmux/.tmux.conf ~/.tmux.conf
 }
 
 main() {

@@ -9,7 +9,7 @@
 # only printing errors.
 
 link_ssh_config() {
-	link ~/.config/configs/ssh_config ~/.ssh/config
+	link ~/.config/configs/ssh/ssh_config ~/.ssh/config
 }
 
 setup_ssh_agent() {

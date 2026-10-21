@@ -74,7 +74,7 @@ install_prettier() {
 	npm_install prettier || return 1
 
 	echo "Linking prettier config..."
-	ln -sfn ~/.config/configs/.prettierrc.json ~/.prettierrc.json
+	ln -sfn ~/.config/configs/node/.prettierrc.json ~/.prettierrc.json
 }
 
 install_eslint_configs() {
@@ -104,8 +104,8 @@ install_eslint_configs() {
 
 	# Create symlinks to eslint config files
 	echo "Installing ESLint configs globally..."
-	ln -s ~/.config/configs/eslint/eslint.config.ts "$ESLINT_CONFIG_DIR/eslint.config.ts"
-	ln -s ~/.config/configs/eslint/eslint-utilities.ts "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
+	ln -s ~/.config/configs/node/eslint/eslint.config.ts "$ESLINT_CONFIG_DIR/eslint.config.ts"
+	ln -s ~/.config/configs/node/eslint/eslint-utilities.ts "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
 
 	echo "ESLint configs symlinked to $ESLINT_CONFIG_DIR"
 	echo "You can import them in your projects:"
@@ -122,7 +122,7 @@ enable_corepack() {
 }
 
 link_eslintrc() {
-	link ~/.config/configs/.eslintrc.json ~/.eslintrc.json
+	link ~/.config/configs/node/.eslintrc.json ~/.eslintrc.json
 }
 
 main() {

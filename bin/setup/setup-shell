@@ -85,7 +85,7 @@ install_dev_tools() {
 }
 
 link_shell_config() {
-	link ~/.config/configs/.p10k.zsh ~/.p10k.zsh
+	link ~/.config/configs/zsh/.p10k.zsh ~/.p10k.zsh
 }
 
 main() {

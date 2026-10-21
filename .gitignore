@@ -31,13 +31,13 @@ doctl/
 
 # Git directory
 .git/
-git/
+/git/
 
 # Sensitive config files (contain personal email/keys)
-configs/.gitconfig
-configs/.gitconfig__wrk
-configs/ssh_config
-configs/agent-skills/
+configs/git/.gitconfig
+configs/git/.gitconfig__wrk
+configs/ssh/ssh_config
+configs/agents/agent-skills/
 
 # Old/deprecated files
 nvim_old_09-jan-23/

@@ -99,7 +99,7 @@ install_neovim_ai() {
 }
 
 link_vim_config() {
-	link ~/.config/configs/.vimrc ~/.vimrc
+	link ~/.config/configs/vim/.vimrc ~/.vimrc
 }
 
 main() {

@@ -9,9 +9,9 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
 
 link_git_configs() {
-	link ~/.config/configs/.gitconfig ~/.gitconfig
-	link ~/.config/configs/.gitconfig__wrk ~/.gitconfig__wrk
-	link ~/.config/configs/.gitignore__global ~/.gitignore__global
+	link ~/.config/configs/git/.gitconfig ~/.gitconfig
+	link ~/.config/configs/git/.gitconfig__wrk ~/.gitconfig__wrk
+	link ~/.config/configs/git/.gitignore__global ~/.gitignore__global
 	git config --global core.excludesfile ~/.gitignore__global
 }
 
