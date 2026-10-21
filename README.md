@@ -25,6 +25,27 @@ All configuration lives under `~/.config`:
 | `git/`     | Global git config and gitignore                                                                           |
 | `assets/`  | Screenshots, patched fonts, theme files                                                                   |
 
+### configs/ and bin/
+
+```text
+configs/
+├── zsh/      .zshrc, .p10k.zsh
+├── git/      .gitconfig, .gitconfig__wrk, .gitignore__global (+ .example files)
+├── ssh/      ssh_config (+ example)
+├── tmux/     .tmux.conf
+├── vim/      .vimrc
+├── node/     eslint/, .eslintrc.json, .prettierrc.json, prettier/jest/tsconfig configs
+├── java/     eclipse-java-google-style.xml, lombok.jar
+└── agents/   agent-skills/, antigravity-keybindings.json
+
+bin/
+├── setup/    setup-environment and one setup-* script per tool
+├── tools/    kill-port, pwdc, reinstall-npm-pkg, zscalar-fix.sh
+├── android/  adb helpers
+├── common/   shared helpers (brew, node, fs, print, git, ...)
+└── utils.sh  loads everything in common/
+```
+
 > [!TIP]
 >
 > **XDG compliant:** Cloning to `~/.config` means tools like Neovim, Kitty, Fish, and gh pick up their configs automatically without any manual linking.
