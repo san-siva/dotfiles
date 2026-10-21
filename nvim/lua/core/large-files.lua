@@ -48,9 +48,8 @@ vim.api.nvim_create_autocmd('BufReadPost', {
 
       -- Disable treesitter for this buffer
       vim.schedule(function()
-        pcall(vim.cmd, 'TSBufDisable highlight')
-        pcall(vim.cmd, 'TSBufDisable indent')
-        pcall(vim.cmd, 'TSBufDisable incremental_selection')
+        pcall(vim.treesitter.stop, bufnr)
+        vim.bo[bufnr].indentexpr = ''
       end)
 
       vim.notify(string.format('Large file (%s). Features disabled for performance.', large_file.format_size(size)), vim.log.levels.WARN)
@@ -87,9 +86,8 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = function(args)
     if vim.b[args.buf].large_file then
       vim.schedule(function()
-        pcall(vim.cmd, 'TSBufDisable highlight')
-        pcall(vim.cmd, 'TSBufDisable indent')
-        pcall(vim.cmd, 'TSBufDisable incremental_selection')
+        pcall(vim.treesitter.stop, args.buf)
+        vim.bo[args.buf].indentexpr = ''
       end)
     end
   end,

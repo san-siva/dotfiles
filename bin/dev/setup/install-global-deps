@@ -132,7 +132,7 @@ install_brew_packages() {
 		return 1
 	fi
 
-	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch figlet lolcat
+	brew install deno fish ripgrep fzf fd tmux mkcert nss ruby zoxide jq yq gh black wget fastfetch figlet lolcat tree-sitter-cli
 
 	# Flux CD (Kubernetes GitOps tooling)
 	brew install fluxcd/tap/flux

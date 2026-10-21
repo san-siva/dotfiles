@@ -84,34 +84,6 @@ require('lazy').setup({
     },
   },
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
-  {
-    'iamcco/markdown-preview.nvim',
-    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
-    build = function()
-      vim.fn['mkdp#util#install']()
-    end,
-    config = function()
-      vim.g.mkdp_filetypes = { 'markdown' }
-      vim.g.mkdp_theme = 'light'
-      vim.g.mkdp_auto_close = 0
-      vim.g.mkdp_refresh_slow = 0
-      vim.g.mkdp_preview_options = {
-        mkit = {},
-        katex = {},
-        uml = {},
-        maid = {}, -- Enable mermaid diagrams
-        disable_sync_scroll = 0,
-        sync_scroll_type = 'middle',
-        hide_yaml_meta = 1,
-        sequence_diagrams = {},
-        flowchart_diagrams = {},
-        content_editable = 0,
-        disable_filename = 0,
-        toc = {},
-      }
-    end,
-    ft = { 'markdown' },
-  },
   'tpope/vim-fugitive',
   {
     'nvim-tree/nvim-tree.lua',
@@ -139,10 +111,13 @@ require('lazy').setup({
   'mfussenegger/nvim-jdtls',
   { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
   {
+    -- `master` is archived and does not support Neovim 0.12; `main` needs the tree-sitter CLI
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
+    lazy = false,
     build = ':TSUpdate',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
+      { 'nvim-treesitter/nvim-treesitter-textobjects', branch = 'main' },
     },
   },
   {
@@ -151,13 +126,6 @@ require('lazy').setup({
   {
     'milanglacier/minuet-ai.nvim',
     dependencies = { 'nvim-lua/plenary.nvim' },
-  },
-  {
-    'olimorris/codecompanion.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-treesitter/nvim-treesitter',
-    },
   },
 }, {
   ui = {
@@ -190,7 +158,6 @@ require 'plugins.conform'
 require 'plugins.tree'
 -- require 'plugins.copilot'
 require 'plugins.minuet'
-require 'plugins.codecompanion'
 require 'plugins.lualine'
 require 'plugins.catppuccin'
 require 'plugins.fugitive'

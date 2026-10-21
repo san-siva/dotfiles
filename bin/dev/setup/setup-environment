@@ -340,14 +340,6 @@ install_ollama() {
 		echo 'Installing Ollama'
 		brew install ollama
 	fi
-
-	# Start Ollama as a background service so models can be pulled/served
-	echo 'Starting Ollama service'
-	brew services start ollama
-
-	# Local code-completion model used by minuet-ai.nvim
-	echo 'Pulling qwen2.5-coder:1.5b'
-	ollama pull qwen2.5-coder:1.5b
 }
 
 enable_atrun() {
