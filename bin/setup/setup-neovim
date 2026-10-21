@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# This script installs everything Neovim needs: the editor itself, the tools
+# conform.nvim formats with, treesitter/lazy/mason requirements and the
+# language providers (see :checkhealth).
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+load_brew
+
+install_neovim() {
+	brew_install nvim neovim
+}
+
+install_neovim_core_tools() {
+	# Used by telescope.nvim
+	brew_install rg ripgrep
+	brew_install fd
+
+	# Needed by nvim-treesitter to compile parsers
+	brew_install tree-sitter tree-sitter-cli
+
+	# Needed by lazy.nvim and mason.nvim
+	brew_install luarocks
+}
+
+install_neovim_formatters() {
+	# Formatters used by conform.nvim (see nvim/lua/plugins/conform.lua)
+	brew_install black
+	brew_install isort
+	brew_install clang-format
+	brew_install yamllint
+	brew_install google-java-format
+
+	if [ -n "$(command -v stylua)" ]; then
+		echo 'Stylua already installed'
+	elif [ -n "$(command -v cargo)" ]; then
+		echo 'Installing Stylua'
+		cargo install stylua
+	else
+		echo 'cargo not found, skipping stylua'
+	fi
+
+	if [ -n "$(command -v go)" ]; then
+		if [ -z "$(command -v goimports)" ]; then
+			echo 'Installing goimports'
+			go install golang.org/x/tools/cmd/goimports@latest
+		else
+			echo 'goimports already installed'
+		fi
+		if [ -z "$(command -v shfmt)" ]; then
+			echo 'Installing shfmt'
+			go install mvdan.cc/sh/v3/cmd/shfmt@latest
+		else
+			echo 'shfmt already installed'
+		fi
+	else
+		echo 'go not found, skipping goimports and shfmt'
+	fi
+
+	if [ -n "$(command -v pip3)" ]; then
+		pip3 install --user shandy-sqlfmt beautysh yamlfix
+	else
+		echo 'pip3 not found, skipping sqlfmt, beautysh and yamlfix'
+	fi
+}
+
+install_neovim_java() {
+	brew_install jdtls
+	mkdir -p "$HOME/.local/share/eclipse"
+}
+
+install_neovim_providers() {
+	# :checkhealth vim.provider
+	echo 'Installing/updating neovim node provider'
+	npm_install neovim
+
+	if [ -n "$(command -v pip3)" ]; then
+		pip3 install --user pynvim
+	else
+		echo 'pip3 not found, skipping python provider'
+	fi
+
+	if [ -z "$(command -v gem)" ]; then
+		echo 'gem not found, skipping ruby provider'
+	elif [ "$(ruby -e 'puts RUBY_VERSION.split(".").first')" -lt 3 ]; then
+		echo 'Ruby is too old (need >= 3.0) for the neovim gem, skipping ruby provider'
+	else
+		gem install --user-install neovim
+	fi
+}
+
+install_neovim_ai() {
+	# Local model backend for codecompanion.nvim
+	brew_install ollama
+}
+
+link_vim_config() {
+	link ~/.config/configs/vim/.vimrc ~/.vimrc
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+	echo "Setting up Neovim..."
+	echo ""
+
+	if [ -z "$(command -v brew)" ]; then
+		echo 'Homebrew not found. Run setup-environment first.'
+		exit 1
+	fi
+
+	install_neovim
+	install_neovim_core_tools
+	install_neovim_formatters
+	install_neovim_java
+	install_neovim_providers
+	install_neovim_ai
+	link_vim_config
+}
+
+main "$@"
+exit 0

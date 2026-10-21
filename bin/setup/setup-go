@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Go and its tools.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_go() {
+	brew_install go
+
+	if [ -n "$(command -v dlv)" ]; then
+		echo 'dlv already installed'
+	else
+		echo 'Installing Go tools'
+		go install github.com/go-delve/delve/cmd/dlv@latest
+	fi
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_go
+}
+
+main "$@"
+exit 0

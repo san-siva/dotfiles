@@ -10,6 +10,6 @@
 # in the specified work directory (e.g., ~/Documents/Work/)
 # This enables work email, SSH commit signing, and GitHub URL rewriting
 [includeIf "gitdir:/path/to/work/directory/"]
-  path = ~/.config/configs/.gitconfig__wrk
+  path = ~/.config/configs/git/.gitconfig__wrk
 [includeIf "gitdir:/path/to/work/directory/**"]
-  path = ~/.config/configs/.gitconfig__wrk
+  path = ~/.config/configs/git/.gitconfig__wrk

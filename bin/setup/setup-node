@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Node (via nvm), Yarn, global tools, corepack and the global ESLint and Prettier packages and configs.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_node() {
+	if [ -n "$(command -v node)" ]; then
+		echo 'Node already installed'
+	else
+		echo 'Installing Node'
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+		load_nvm
+		nvm install --lts
+		nvm install node
+	fi
+}
+
+install_yarn() {
+	brew_install yarn
+}
+
+install_node_tools() {
+	# Markdown
+	npm_install markdownlint-cli2
+
+	# Jest
+	npm_install jest
+
+	# TypeScript
+	npm_install typescript
+
+	# Utils
+	npm_install local-ssl-proxy
+}
+
+install_eslint() {
+	# ESLINT Core
+	npm_install \
+		eslint \
+		jiti \
+		@eslint/js \
+		@eslint/eslintrc \
+		@eslint/compat \
+		eslint_d
+
+	# ESLINT Plugins
+	npm_install \
+		eslint-plugin-react \
+		eslint-plugin-react-native \
+		eslint-plugin-react-hooks \
+		eslint-plugin-jest \
+		eslint-plugin-import \
+		eslint-plugin-jsx-a11y \
+		eslint-plugin-no-await-in-promise \
+		eslint-plugin-redux-saga \
+		@jambit/eslint-plugin-typed-redux-saga \
+		eslint-plugin-simple-import-sort \
+		eslint-plugin-unicorn
+
+	# TypeScript and Prettier integrations
+	npm_install \
+		typescript-eslint \
+		@typescript-eslint/eslint-plugin \
+		@typescript-eslint/parser \
+		eslint-config-prettier
+}
+
+install_prettier() {
+	npm_install prettier || return 1
+
+	echo "Linking prettier config..."
+	ln -sfn ~/.config/configs/node/.prettierrc.json ~/.prettierrc.json
+}
+
+install_eslint_configs() {
+	if ! [ -n "$(command -v npm)" ]; then
+		echo "npm not found, skipping eslint config installation"
+		return 1
+	fi
+
+	# Get npm global prefix
+	NPM_GLOBAL=$(npm config get prefix)
+	ESLINT_CONFIG_DIR="$NPM_GLOBAL/lib/eslint-configs"
+
+	# Create directory for global eslint configs
+	if [ ! -d "$ESLINT_CONFIG_DIR" ]; then
+		echo "Creating global eslint configs directory at $ESLINT_CONFIG_DIR"
+		mkdir -p "$ESLINT_CONFIG_DIR"
+	fi
+
+	# Remove existing files/symlinks if they exist
+	if [ -L "$ESLINT_CONFIG_DIR/eslint.config.ts" ] || [ -f "$ESLINT_CONFIG_DIR/eslint.config.ts" ]; then
+		rm -f "$ESLINT_CONFIG_DIR/eslint.config.ts"
+	fi
+
+	if [ -L "$ESLINT_CONFIG_DIR/eslint-utilities.ts" ] || [ -f "$ESLINT_CONFIG_DIR/eslint-utilities.ts" ]; then
+		rm -f "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
+	fi
+
+	# Create symlinks to eslint config files
+	echo "Installing ESLint configs globally..."
+	ln -s ~/.config/configs/node/eslint/eslint.config.ts "$ESLINT_CONFIG_DIR/eslint.config.ts"
+	ln -s ~/.config/configs/node/eslint/eslint-utilities.ts "$ESLINT_CONFIG_DIR/eslint-utilities.ts"
+
+	echo "ESLint configs symlinked to $ESLINT_CONFIG_DIR"
+	echo "You can import them in your projects:"
+	echo "  import config from '$ESLINT_CONFIG_DIR/eslint.config.ts';"
+}
+
+enable_corepack() {
+	if ! [ -n "$(command -v corepack)" ]; then
+		echo "Corepack not found, yarn not enabled"
+		return 1
+	fi
+
+	corepack enable
+}
+
+link_eslintrc() {
+	link ~/.config/configs/node/.eslintrc.json ~/.eslintrc.json
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_node
+	load_nvm
+	install_yarn
+	install_node_tools
+	install_eslint
+	install_eslint_configs
+	install_prettier
+	enable_corepack
+	link_eslintrc
+}
+
+main "$@"
+exit 0

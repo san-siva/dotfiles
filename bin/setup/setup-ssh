@@ -4,7 +4,13 @@
 # Date Created: 15-12-2025
 
 # Description:
-# Sets up SSH agent and adds SSH keys silently, only printing errors.
+# Links the ssh config and sets up the SSH agent. Run it to link the config;
+# ~/.zshrc sources it on every shell start to load the agent and keys silently,
+# only printing errors.
+
+link_ssh_config() {
+	link ~/.config/configs/ssh/ssh_config ~/.ssh/config
+}
 
 setup_ssh_agent() {
     # Start ssh-agent silently
@@ -30,4 +36,19 @@ setup_ssh_agent() {
     done
 }
 
-setup_ssh_agent
+main() {
+	source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+	echo "Sankit"
+	echo ""
+
+	link_ssh_config
+}
+
+# Sourced from zsh: only load the agent (and never exit the shell)
+if [ -n "$ZSH_VERSION" ] || [ "${BASH_SOURCE[0]}" != "$0" ]; then
+	setup_ssh_agent
+else
+	main "$@"
+	exit 0
+fi

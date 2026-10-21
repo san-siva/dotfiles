@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs a current bash via Homebrew.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_bash() {
+	if [ -x "$(brew --prefix)/bin/bash" ]; then
+		echo 'bash already installed'
+	else
+		echo 'Installing bash'
+		brew install bash
+	fi
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_bash
+}
+
+main "$@"
+exit 0

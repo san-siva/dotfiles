@@ -15,15 +15,36 @@ The setup includes a full Neovim IDE configuration, Kitty terminal, Zsh shell co
 
 All configuration lives under `~/.config`:
 
-| Path       | Description                                                    |
-| ---------- | -------------------------------------------------------------- |
-| `nvim/`    | Neovim configuration (init.lua + Lua modules)                  |
-| `kitty/`   | Kitty terminal — fonts, theme, window settings                 |
-| `fish/`    | Fish shell — minimal PATH additions                            |
-| `configs/` | Home-dir dotfiles (`.zshrc`, `.gitconfig`, `.tmux.conf`, etc.) |
-| `bin/`     | Shell utility scripts (`android/`, `dev/`, `utils.sh`)         |
-| `git/`     | Global git config and gitignore                                |
-| `assets/`  | Screenshots, patched fonts, theme files                        |
+| Path       | Description                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------- |
+| `nvim/`    | Neovim configuration (init.lua + Lua modules)                                                             |
+| `kitty/`   | Kitty terminal — fonts, theme, window settings                                                            |
+| `fish/`    | Fish shell — minimal PATH additions                                                                       |
+| `configs/` | Home-dir dotfiles, grouped by tool (`zsh/`, `git/`, `ssh/`, `tmux/`, `vim/`, `node/`, `java/`, `agents/`) |
+| `bin/`     | Shell utility scripts (`android/`, `setup/`, `tools/`, `common/`, `utils.sh`)                             |
+| `git/`     | Global git config and gitignore                                                                           |
+| `assets/`  | Screenshots, patched fonts, theme files                                                                   |
+
+### configs/ and bin/
+
+```text
+configs/
+├── zsh/      .zshrc, .p10k.zsh
+├── git/      .gitconfig, .gitconfig__wrk, .gitignore__global (+ .example files)
+├── ssh/      ssh_config (+ example)
+├── tmux/     .tmux.conf
+├── vim/      .vimrc
+├── node/     eslint/, .eslintrc.json, .prettierrc.json, prettier/jest/tsconfig configs
+├── java/     eclipse-java-google-style.xml, lombok.jar
+└── agents/   agent-skills/, antigravity-keybindings.json
+
+bin/
+├── setup/    setup-environment and one setup-* script per tool
+├── tools/    kill-port, pwdc, reinstall-npm-pkg, zscalar-fix.sh
+├── android/  adb helpers
+├── common/   shared helpers (brew, node, fs, print, git, ...)
+└── utils.sh  loads everything in common/
+```
 
 > [!TIP]
 >
@@ -31,15 +52,15 @@ All configuration lives under `~/.config`:
 
 ## Requirements
 
-| Tool                      | Purpose                                 |
-| ------------------------- | --------------------------------------- |
-| `neovim 0.10+`            | Editor (required for all nvim features) |
-| `node 18+ / nvm`          | JavaScript tooling, LSP servers         |
-| `git`                     | Version control                         |
-| `kitty`                   | Terminal emulator                       |
-| `zsh`                     | Primary shell                           |
+| Tool                      | Purpose                                                             |
+| ------------------------- | ------------------------------------------------------------------- |
+| `neovim 0.10+`            | Editor (required for all nvim features)                             |
+| `node 18+ / nvm`          | JavaScript tooling, LSP servers                                     |
+| `git`                     | Version control                                                     |
+| `kitty`                   | Terminal emulator                                                   |
+| `zsh`                     | Primary shell                                                       |
 | `brew`                    | macOS package manager — installed by `setup-environment` if missing |
-| `JetBrainsMono Nerd Font` | Font (all terminals + Neovim)           |
+| `JetBrainsMono Nerd Font` | Font (all terminals + Neovim)                                       |
 
 ## Installation
 
@@ -56,66 +77,59 @@ git remote add origin https://github.com/san-siva/dotfiles
 git pull origin main
 ```
 
-Three setup scripts handle the full environment bootstrap. Run them in order, or use `setup-environment` to run all three at once.
+The environment bootstrap is split into one script per tool in `bin/setup/`. Run `setup-environment` to run them all in order, or run any script on its own. All of them are safe to re-run.
 
 ### setup-environment
 
-The top-level bootstrapper. Installs Homebrew first if it is missing and puts it on PATH for the rest of the run, then installs all system tools and delegates to `install-global-deps` and `link-dotfiles`.
+The top-level bootstrapper. Runs `setup-homebrew` first (and stops if it fails, since everything else needs brew), then every script below in groups: core (`homebrew`, `bash`, `lua`), languages, terminal tools, editors, agents, personal tools and configs. `main` calls one function per group, so reordering or skipping a group is a one-line change.
 
 ```bash
-~/.config/bin/dev/setup/setup-environment
+~/.config/bin/setup/setup-environment
 ```
 
-| Category          | Installs                                                                                        |
-| ----------------- | ----------------------------------------------------------------------------------------------- |
-| Languages         | `python3`, `node` (via nvm), `ruby`, `go`, `lua`, `rust`                                        |
-| Java              | `openjdk`, `openjdk@21`, `ant`, `maven`, `jdtls`, `google-java-format`                          |
-| Editor / Terminal | `neovim`, `kitty`, `tmux` + TPM                                                                 |
-| Shell             | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`                                    |
-| CLI tools         | `bash` 5, `ripgrep`, `fzf`, `fd`, `zoxide`, `jq`, `yq`, `gh`, `fish`, `deno`, `wget`, `tree`, `fastfetch` |
-| Formatters        | `black` (Python), `sqlfluff`, `shfmt` (via Go), `stylua` (via Cargo)                            |
+| Script              | Installs                                                                                                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setup-homebrew`    | Homebrew, `ca-certificates`                                                                                                                                                                                |
+| `setup-bash`        | `bash` 5                                                                                                                                                                                                   |
+| `setup-lua`         | `lua`, `luarocks`                                                                                                                                                                                          |
+| `setup-python`      | `python3`, `sqlfluff`                                                                                                                                                                                      |
+| `setup-node`        | `node` (via nvm), `yarn`, Corepack, global npm tools (`jest`, `typescript`, ...), ESLint + configs, Prettier + config                                                                                      |
+| `setup-ruby`        | `ruby`                                                                                                                                                                                                     |
+| `setup-rust`        | `rust`                                                                                                                                                                                                     |
+| `setup-go`          | `go`, `dlv`                                                                                                                                                                                                |
+| `setup-java`        | `openjdk`, `openjdk@21`, `ant`, `maven`                                                                                                                                                                    |
+| `setup-tmux`        | `tmux` + TPM                                                                                                                                                                                               |
+| `setup-kitty`       | `kitty`                                                                                                                                                                                                    |
+| `setup-shell`       | `oh-my-zsh`, `powerlevel10k`, `zsh-history-substring-search`, `fish`, `fzf`, `zoxide`, `moreutils`, `tree`, `fastfetch`, `figlet`, `lolcat`, `cmatrix`, `deno`, `mkcert`, `jq`, `yq`, `gh`, `wget`, `calc` |
+| `setup-kubectl`     | `kubectl`, `flux`                                                                                                                                                                                          |
+| `setup-neovim`      | `neovim`, `ripgrep`, `fd`, `tree-sitter-cli`, formatters, `jdtls`, language providers, `ollama`                                                                                                            |
+| `setup-claude`      | Claude Code, `chrome-devtools-mcp`, agent skills                                                                                                                                                           |
+| `setup-antigravity` | Antigravity CLI skills and keybindings                                                                                                                                                                     |
+| `setup-gitsy`       | `gitsy` (Git workflow utilities)                                                                                                                                                                           |
+| `setup-blogkit`     | `blogkit-md` CLI                                                                                                                                                                                           |
+| `setup-git`         | git config                                                                                                                                                                                                 |
+| `setup-ssh`         | ssh config, and the SSH agent that `.zshrc` sources on startup                                                                                                                                             |
 
-### install-global-deps
+Shared helpers (`brew_install`, `npm_install`, `load_brew`, `load_nvm`) live in `bin/common/` (`brew.sh`, `node.sh`, `fs.sh`, ...).
 
-Installs all global npm packages, symlinks ESLint configs, and enables Corepack. Safe to re-run.
+### Dotfile symlinks
 
-```bash
-~/.config/bin/dev/setup/install-global-deps
-```
+Each setup script links its own config from `~/.config/configs/` using `ln -sfn` (the `link` helper in `bin/common/fs.sh`), so re-running is safe: existing files and symlinks at each target are replaced in place. `setup-git`, `setup-ssh` and `setup-antigravity` only link configs.
 
-| Category       | Packages                                                                                                             |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| ESLint core    | `eslint`, `eslint_d`, `jiti`, `@eslint/js`, `@eslint/eslintrc`, `@eslint/compat`                                     |
-| ESLint plugins | `eslint-plugin-react`, `-react-hooks`, `-jest`, `-import`, `-redux-saga`, `-unicorn`, `simple-import-sort`, and more |
-| TypeScript     | `typescript`, `typescript-eslint`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`                   |
-| Prettier       | `prettier`, `eslint-config-prettier`                                                                                 |
-| Testing        | `jest`, `markdownlint-cli2`                                                                                          |
-| Tools          | `@san-siva/gitsy`, `@anthropic-ai/claude-code`, `local-ssl-proxy`, `neovim` (npm provider)                           |
-| ESLint configs | Symlinks `eslint.config.ts` and `eslint-utilities.ts` into the npm global prefix                                     |
-
-### link-dotfiles
-
-Creates symlinks from `~/.config/configs/` into the home directory using `ln -sfn`, so re-running it is safe: existing files and symlinks at each target are replaced in place. It also links private agent skills from `WORK_AGENT_SKILLS_DIR` when that variable is set — see [Private skills](#private-skills).
-
-```bash
-~/.config/bin/dev/setup/link-dotfiles
-```
-
-| Source                                     | Symlinked to              |
-| ------------------------------------------ | ------------------------- |
-| `configs/.tmux.conf`                       | `~/.tmux.conf`            |
-| `configs/.prettierrc.json`                 | `~/.prettierrc.json`      |
-| `configs/.eslintrc.json`                   | `~/.eslintrc.json`        |
-| `configs/.p10k.zsh`                        | `~/.p10k.zsh`             |
-| `configs/.gitconfig`                       | `~/.gitconfig`            |
-| `configs/.gitconfig__wrk`                  | `~/.gitconfig__wrk`       |
-| `configs/ssh_config`                       | `~/.ssh/config`           |
-| `configs/eclipse-java-google-style.xml`    | `~/.local/share/eclipse/` |
-| `configs/lombok.jar`                       | `~/.local/share/eclipse/` |
-| `configs/agent-skills`                     | `~/.claude/skills`        |
-| `configs/agent-skills`                     | `~/.gemini/antigravity-cli/skills` |
-| `$WORK_AGENT_SKILLS_DIR/*`                 | `configs/agent-skills/<skill>` |
-| `configs/antigravity-keybindings.json`     | `~/.gemini/antigravity-cli/keybindings.json` |
+| Script              | Source                                                            | Symlinked to                                 |
+| ------------------- | ----------------------------------------------------------------- | -------------------------------------------- |
+| `setup-tmux`        | `configs/tmux/.tmux.conf`                                         | `~/.tmux.conf`                               |
+| `setup-shell`       | `configs/zsh/.p10k.zsh`                                           | `~/.p10k.zsh`                                |
+| `setup-neovim`      | `configs/vim/.vimrc`                                              | `~/.vimrc`                                   |
+| `setup-node`        | `configs/node/.eslintrc.json`                                     | `~/.eslintrc.json`                           |
+| `setup-node`        | `configs/node/.prettierrc.json`                                   | `~/.prettierrc.json`                         |
+| `setup-git`         | `configs/git/.gitconfig`, `.gitconfig__wrk`, `.gitignore__global` | `~/`                                         |
+| `setup-ssh`         | `configs/ssh/ssh_config`                                          | `~/.ssh/config`                              |
+| `setup-java`        | `configs/java/eclipse-java-google-style.xml`, `lombok.jar`        | `~/.local/share/eclipse/`                    |
+| `setup-claude`      | `configs/agents/agent-skills`                                     | `~/.claude/skills`                           |
+| `setup-claude`      | `$WORK_AGENT_SKILLS_DIR/*`                                        | `configs/agents/agent-skills/<skill>`        |
+| `setup-antigravity` | `configs/agents/agent-skills`                                     | `~/.gemini/antigravity-cli/skills`           |
+| `setup-antigravity` | `configs/agents/antigravity-keybindings.json`                     | `~/.gemini/antigravity-cli/keybindings.json` |
 
 > [!WARNING]
 >
@@ -123,10 +137,10 @@ Creates symlinks from `~/.config/configs/` into the home directory using `ln -sf
 
 ### Create the local zshrc
 
-`link-dotfiles` doesn't create `~/.zshrc` — it's a machine-local file that holds secrets (see [Shell](#shell)). Create it once so new shells load the tracked config:
+The setup scripts don't create `~/.zshrc` — it's a machine-local file that holds secrets (see [Shell](#shell)). Create it once so new shells load the tracked config:
 
 ```bash
-echo 'source ~/.config/configs/.zshrc' > ~/.zshrc
+echo 'source ~/.config/configs/zsh/.zshrc' > ~/.zshrc
 ```
 
 ## Neovim
@@ -254,21 +268,19 @@ nvim/
 
 ## Shell
 
-The Zsh config is split into three layers so the tracked parts stay portable and secrets never touch the repo.
+The Zsh config is split into two layers so the tracked parts stay portable and secrets never touch the repo.
 
 ```mermaid
 graph LR
-  A["~/.zshrc<br/>untracked, machine-local"] -->|sources| B["configs/.zshrc<br/>tracked"]
-  B -->|sources first| C["configs/.zshrc_pre<br/>prompt + oh-my-zsh"]
-  B --> D["main()"]
-  A --> E["main_local()<br/>secrets + local setup"]
+  A["~/.zshrc<br/>untracked, machine-local"] -->|sources| B["configs/zsh/.zshrc<br/>tracked"]
+  B --> C["main()<br/>prompt, oh-my-zsh, PATH, aliases"]
+  A --> D["main_local()<br/>secrets + local setup"]
 ```
 
-| File                 | Tracked | Responsibility                                                               |
-| -------------------- | ------- | ---------------------------------------------------------------------------- |
-| `~/.zshrc`           | No      | Entry point plus machine-local `setup_*` functions for secrets and tooling   |
-| `configs/.zshrc`     | Yes     | PATH, language toolchains, integrations, keybindings, aliases                |
-| `configs/.zshrc_pre` | Yes     | Catppuccin syntax highlighting, Powerlevel10k instant prompt, oh-my-zsh load |
+| File                 | Tracked | Responsibility                                                                        |
+| -------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `~/.zshrc`           | No      | Entry point plus machine-local `setup_*` functions for secrets and tooling            |
+| `configs/zsh/.zshrc` | Yes     | Prompt (Catppuccin, Powerlevel10k, oh-my-zsh), PATH, toolchains, keybindings, aliases |
 
 ### Machine-local entry point
 
@@ -276,7 +288,7 @@ graph LR
 
 ```bash
 # ~/.zshrc
-source ~/.config/configs/.zshrc
+source ~/.config/configs/zsh/.zshrc
 
 setup_env_vars() {
     # Secrets — not tracked in any repo
@@ -311,11 +323,14 @@ main_local
 
 ### One function per concern
 
-Instead of one long script, `configs/.zshrc` groups each concern into its own `setup_*` function, and a single `main()` calls them in order. Reordering, disabling, or debugging a step is a one-line change:
+Instead of one long script, `configs/zsh/.zshrc` groups each concern into its own `setup_*` function, and a single `main()` calls them in order. Reordering, disabling, or debugging a step is a one-line change:
 
 ```bash
-# configs/.zshrc
+# configs/zsh/.zshrc
 main() {
+    setup_prompt
+    setup_instant_prompt
+    setup_oh_my_zsh
     setup_environment_variables
     setup_homebrew_paths
     setup_go_environment
@@ -334,28 +349,31 @@ main() {
 main
 ```
 
-| Function                      | Responsibility                                                         |
-| ----------------------------- | ---------------------------------------------------------------------- |
-| `setup_environment_variables` | `TERM`, `EDITOR`, `VISUAL`                                             |
-| `setup_homebrew_paths`        | Homebrew `bin` / `sbin` and Rancher Desktop                            |
-| `setup_go_environment`        | `GOPATH` and `~/go/bin`                                                |
-| `setup_rust_environment`      | `~/.cargo/bin`                                                         |
-| `setup_ruby_environment`      | Homebrew Ruby, compiler flags, user gem bin                            |
-| `setup_python_environment`    | Python user-base `bin`                                                 |
-| `setup_java_environment`      | OpenJDK, Zulu 8, `JAVA_HOME`                                           |
-| `setup_custom_bins`           | `~/.local/bin`, `~/bin`, and the `bin/` script folders in this repo    |
-| `setup_node_environment`      | nvm, Yarn global bin, Zscaler CA for Node tooling                      |
-| `setup_shell_integrations`    | zoxide — runs after PATH is complete                                   |
-| `setup_keybindings`           | `^n` / `^p` completion, `^j` / `^k` history substring search           |
-| `setup_ssh_agent`             | Loads keys via `bin/dev/setup-ssh-agent`                               |
-| `setup_aliases`               | `sed` → `gsed`, gh copilot shortcuts, navigation aliases               |
+| Function                      | Responsibility                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| `setup_prompt`                | Catppuccin syntax highlighting, Powerlevel10k theme and `.p10k.zsh`                               |
+| `setup_instant_prompt`        | Powerlevel10k instant prompt                                                                      |
+| `setup_oh_my_zsh`             | oh-my-zsh with the `git` and `zsh-history-substring-search` plugins                               |
+| `setup_environment_variables` | `TERM` (left to tmux inside tmux), `EDITOR`, `VISUAL`                                             |
+| `setup_homebrew_paths`        | Homebrew `bin` / `sbin` and Rancher Desktop                                                       |
+| `setup_go_environment`        | `GOPATH` and `~/go/bin`                                                                           |
+| `setup_rust_environment`      | `~/.cargo/bin`                                                                                    |
+| `setup_ruby_environment`      | Homebrew Ruby, compiler flags, user gem bin                                                       |
+| `setup_python_environment`    | Python user-base `bin`                                                                            |
+| `setup_java_environment`      | OpenJDK, Zulu 8, `JAVA_HOME`                                                                      |
+| `setup_custom_bins`           | `~/.local/bin`, `~/bin`, and the `bin/` script folders in this repo (`android`, `setup`, `tools`) |
+| `setup_node_environment`      | nvm, Yarn global bin, Zscaler CA for Node tooling                                                 |
+| `setup_shell_integrations`    | zoxide — runs after PATH is complete                                                              |
+| `setup_keybindings`           | `^n` / `^p` completion, `^j` / `^k` history substring search                                      |
+| `setup_ssh_agent`             | Loads keys via `bin/setup/setup-ssh`                                                              |
+| `setup_aliases`               | `sed` → `gsed`, navigation aliases                                                                |
 
 ### Safe PATH handling
 
 PATH is built through two guarded helpers. A directory is only added if it exists, and `typeset -aU path` keeps entries unique, so re-sourcing the file never produces duplicates. The same config works on a machine that's missing some toolchains:
 
 ```bash
-# configs/.zshrc
+# configs/zsh/.zshrc
 typeset -aU path
 
 prepend_path() {
@@ -391,7 +409,7 @@ Config at `kitty/kitty.conf`. Kitty is the primary terminal — configured for a
 
 ### Tmux
 
-Config at `configs/.tmux.conf` (symlinked to `~/.tmux.conf`). Uses [TPM](https://github.com/tmux-plugins/tpm) for plugin management with Catppuccin-matching status bar colors.
+Config at `configs/tmux/.tmux.conf` (symlinked to `~/.tmux.conf`). Uses [TPM](https://github.com/tmux-plugins/tpm) for plugin management with Catppuccin-matching status bar colors.
 
 | Setting           | Value                                           |
 | ----------------- | ----------------------------------------------- |
@@ -415,32 +433,32 @@ Config at `configs/.tmux.conf` (symlinked to `~/.tmux.conf`). Uses [TPM](https:/
 
 ## Agent Skills
 
-A shared set of AI agent skills lives in `configs/agent-skills/`. `link-dotfiles` symlinks the same directory into both Claude Code (`~/.claude/skills`) and Antigravity CLI (`~/.gemini/antigravity-cli/skills`), so one edit updates both agents.
+A shared set of AI agent skills lives in `configs/agents/agent-skills/`. `setup-claude` and `setup-antigravity` symlink the same directory into both Claude Code (`~/.claude/skills`) and Antigravity CLI (`~/.gemini/antigravity-cli/skills`), so one edit updates both agents.
 
 ```bash
-configs/agent-skills/
+configs/agents/agent-skills/
 ├── <skill-name>/
 │   ├── SKILL.md       Frontmatter (name, description) + instructions
 │   └── references/    Optional supporting docs loaded on demand
 └── ...
 ```
 
-| Skill                 | Description                                                                         |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| `add-logs`            | Add log statements in the `SAN_SIVA` logging format                                 |
-| `bash-scripts`        | Write bash scripts in the gitsy style — sourced utils, `set_flags` parsing, etc.    |
-| `branch-name`         | Suggest a git branch name for a Jira ticket                                         |
-| `commit-and-push`     | Suggest commit messages, pick one, then commit and push                             |
-| `commit-message`      | Suggest a Conventional Commits message for the staged changes                       |
-| `create-markdown`     | Write markdown following a consistent style guide, including blogkit-md rules       |
-| `create-worktree`     | Create a git worktree using `g-wa`                                                  |
-| `document-progress`   | Record task progress into `~/Work/TASKS`                                            |
-| `gitsy`               | Perform Git operations through the gitsy CLI                                        |
-| `mermaid-wizard`      | Produce syntactically correct Mermaid diagrams for code, architecture, and flows    |
+| Skill               | Description                                                                      |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `add-logs`          | Add log statements in the `SAN_SIVA` logging format                              |
+| `bash-scripts`      | Write bash scripts in the gitsy style — sourced utils, `set_flags` parsing, etc. |
+| `branch-name`       | Suggest a git branch name for a Jira ticket                                      |
+| `commit-and-push`   | Suggest commit messages, pick one, then commit and push                          |
+| `commit-message`    | Suggest a Conventional Commits message for the staged changes                    |
+| `create-markdown`   | Write markdown following a consistent style guide, including blogkit-md rules    |
+| `create-worktree`   | Create a git worktree using `g-wa`                                               |
+| `document-progress` | Record task progress into `~/Work/TASKS`                                         |
+| `gitsy`             | Perform Git operations through the gitsy CLI                                     |
+| `mermaid-wizard`    | Produce syntactically correct Mermaid diagrams for code, architecture, and flows |
 
 ### Private skills
 
-Work-specific skills live in a separate private repository, not here. `link-dotfiles` reads their location from `WORK_AGENT_SKILLS_DIR` — set in the untracked `~/.zshrc` — and symlinks each one into `configs/agent-skills/`, which is gitignored. If the variable is unset, the step is skipped.
+Work-specific skills live in a separate private repository, not here. `setup-claude` reads their location from `WORK_AGENT_SKILLS_DIR` — set in the untracked `~/.zshrc` — and symlinks each one into `configs/agents/agent-skills/`, which is gitignored. If the variable is unset, the step is skipped.
 
 ```bash
 # ~/.zshrc
@@ -455,19 +473,18 @@ setup_env_vars() {
 
 ## Utility Scripts
 
-All scripts in `bin/` are on PATH and share a common utility library at `bin/utils.sh`.
+All scripts in `bin/` are on PATH and share a common utility library in `bin/common/`, loaded by sourcing `bin/utils.sh`. The `setup-*` installers in `bin/setup/` are documented under [Installation](#installation).
 
-| Script                    | Category | Description                                    |
-| ------------------------- | -------- | ---------------------------------------------- |
-| `wireless-adb <ip>`       | Android  | Connect to a device over WiFi                  |
-| `adb-install <apk>`       | Android  | Install APK to connected device                |
-| `adb-reverse <port>`      | Android  | Reverse a port (e.g. Metro bundler)            |
-| `adb-uninstall <package>` | Android  | Uninstall a package by name                    |
-| `kill-port <port>`        | Dev      | Kill the process listening on a given port     |
-| `setup-ssh-agent`         | Dev      | Load SSH key into the running agent            |
-| `pwdc`                    | Dev      | Print current working directory (clean output) |
-| `reinstall-claude`        | Dev      | Reinstall Claude Code CLI tool                 |
-| `reinstall-npm-pkg <pkg> [version]` | Dev | Reinstall/upgrade any global npm package |
+| Script                              | Category | Description                                            |
+| ----------------------------------- | -------- | ------------------------------------------------------ |
+| `wireless-adb <ip>`                 | Android  | Connect to a device over WiFi                          |
+| `adb-install <apk>`                 | Android  | Install APK to connected device                        |
+| `adb-reverse <port>`                | Android  | Reverse a port (e.g. Metro bundler)                    |
+| `adb-uninstall <package>`           | Android  | Uninstall a package by name                            |
+| `kill-port <port>`                  | Tools    | Kill the process listening on a given port             |
+| `pwdc`                              | Tools    | Print current working directory (clean output)         |
+| `reinstall-npm-pkg <pkg> [version]` | Tools    |
+| `zscalar-fix.sh`                    | Tools    | Trust the Zscaler CA for Node, Bun and OpenSSL tooling | Reinstall/upgrade any global npm package |
 
 ## Assets
 

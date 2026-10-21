@@ -6,8 +6,6 @@
 # Main Zsh configuration file for development environment setup
 # Configures PATH, environment variables, keybindings, and aliases
 
-source ~/.config/configs/.zshrc_pre
-
 typeset -aU path
 
 prepend_path() {
@@ -22,8 +20,41 @@ append_path() {
     fi
 }
 
+setup_prompt() {
+    source $HOME/.config/assets/catppuccin_frappe-zsh-syntax-highlighting.zsh
+
+    if [ -f ~/powerlevel10k/powerlevel10k.zsh-theme ]; then
+        source ~/powerlevel10k/powerlevel10k.zsh-theme
+    fi
+
+    # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+    [[ ! -f ~/.config/configs/zsh/.p10k.zsh ]] || source ~/.config/configs/zsh/.p10k.zsh
+}
+
+setup_instant_prompt() {
+    if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+        source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    fi
+}
+
+setup_oh_my_zsh() {
+    export ZSH="$HOME/.oh-my-zsh"
+    ZSH_THEME="powerlevel10k/powerlevel10k"
+
+    plugins=(
+        git
+        zsh-history-substring-search
+    )
+
+    source $ZSH/oh-my-zsh.sh
+    [[ ! -f ~/.config/configs/zsh/.p10k.zsh ]] || source ~/.config/configs/zsh/.p10k.zsh
+}
+
 setup_environment_variables() {
-    export TERM='xterm-256color'
+    # tmux sets its own TERM (see default-terminal in .tmux.conf); overriding it breaks neovim checkhealth
+    if [ -z "$TMUX" ]; then
+        export TERM='xterm-256color'
+    fi
     export EDITOR='nvim'
     export VISUAL='nvim'
 }
@@ -113,11 +144,11 @@ setup_node_environment() {
         append_path "$(yarn global bin)"
     fi
 
-    # Trust the Zscaler TLS-interception CA for Node/Bun tooling (see bin/dev/zscalar_fix.sh)
+    # Trust the Zscaler TLS-interception CA for Node/Bun tooling (see bin/tools/zscalar-fix.sh)
     if [ -f "$HOME/.certs/zscaler-ca.crt" ]; then
         export NODE_EXTRA_CA_CERTS="$HOME/.certs/zscaler-ca.crt"
     else
-        echo "Warning: Zscaler CA not found. Run: $HOME/.config/bin/dev/zscalar_fix.sh"
+        echo "Warning: Zscaler CA not found. Run: $HOME/.config/bin/tools/zscalar-fix.sh"
     fi
 }
 
@@ -132,8 +163,8 @@ setup_custom_bins() {
 
     if [ -d "$HOME/.config/bin" ]; then
         append_path "$HOME/.config/bin/android"
-        append_path "$HOME/.config/bin/dev"
-        append_path "$HOME/.config/bin/dev/setup"
+        append_path "$HOME/.config/bin/setup"
+        append_path "$HOME/.config/bin/tools"
         append_path "$HOME/.config/bin/kubectl"
     fi
 
@@ -159,16 +190,14 @@ setup_keybindings() {
 }
 
 setup_ssh_agent() {
-    if [ -f ~/.config/bin/dev/setup-ssh-agent ]; then
-        source ~/.config/bin/dev/setup-ssh-agent
+    if [ -f ~/.config/bin/setup/setup-ssh ]; then
+        source ~/.config/bin/setup/setup-ssh
     fi
 }
 
 setup_aliases() {
     # Tool aliases
     alias sed='gsed'
-    alias gcs='gh copilot suggest'
-    alias gce='gh copilot explain'
 
     # Navigation aliases
     alias g3_config='cd ~/.config'
@@ -177,6 +206,9 @@ setup_aliases() {
 }
 
 main() {
+    setup_prompt
+    setup_instant_prompt
+    setup_oh_my_zsh
     setup_environment_variables
     setup_homebrew_paths
     setup_go_environment

@@ -1,108 +1,79 @@
-local treesitter_ok, treesitter = pcall(require, 'nvim-treesitter.configs')
+local treesitter_ok, treesitter = pcall(require, 'nvim-treesitter')
 if not treesitter_ok then
   return
 end
 
-local config = {
-  -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = {
-    'vimdoc',
-    'c',
-    'cpp',
-    'go',
-    'lua',
-    'python',
-    'yaml',
-    'rust',
-    'typescript',
-    'javascript',
-    'tsx',
-    'help',
-    'vim',
-    'markdown',
-    'markdown_inline',
-    'dockerfile',
-    'sql',
-    'java',
-  },
-  -- Autoinstall languages that are not installed
-  auto_install = false,
-  highlight = {
-    enable = true,
-    -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-    --  If you are experiencing weird indenting issues, add the language to
-    --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-    additional_vim_regex_highlighting = { 'ruby' },
-  },
-  indent = { enable = true, disable = { 'ruby' } },
-  ignore_install = { 'help' },
-  incremental_selection = {
-    enable = false,
-    keymaps = {
-      init_selection = '<c-space>',
-      node_incremental = '<c-space>',
-      scope_incremental = '<c-s>',
-      node_decremental = '<c-backspace>',
-    },
-  },
-  textobjects = {
-    move = {
-      enable = true,
-      set_jumps = true, -- whether to set jumps in the jumplist
-      goto_next_start = {
-        [']f'] = '@function.outer',
-        [']c'] = '@class.outer',
-        [']b'] = '@block.outer',
-        [']p'] = '@parameter.outer',
-      },
-      goto_next_end = {
-        [']F'] = '@function.outer',
-        [']C'] = '@class.outer',
-        [']B'] = '@block.outer',
-        [']P'] = '@parameter.outer',
-      },
-      goto_previous_start = {
-        ['[f'] = '@function.outer',
-        ['[c'] = '@class.outer',
-        ['[b'] = '@block.outer',
-        ['[p'] = '@parameter.outer',
-      },
-      goto_previous_end = {
-        ['[F'] = '@function.outer',
-        ['[C'] = '@class.outer',
-        ['[B'] = '@block.outer',
-        ['[P'] = '@parameter.outer',
-      },
-    },
-  },
+-- Parsers to install. Needs the tree-sitter CLI on PATH (`brew install tree-sitter-cli`).
+treesitter.install {
+  'vimdoc',
+  'c',
+  'cpp',
+  'go',
+  'lua',
+  'python',
+  'yaml',
+  'rust',
+  'typescript',
+  'javascript',
+  'tsx',
+  'vim',
+  'markdown',
+  'markdown_inline',
+  'dockerfile',
+  'sql',
+  'java',
 }
 
-treesitter.setup(config)
-
--- Disable treesitter for large files
 local large_file = require('utils.large-file-check')
 
-vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufRead' }, {
-  group = vim.api.nvim_create_augroup('DisableTreesitterForLargeFiles', { clear = true }),
+-- On the `main` branch highlighting and indent are no longer toggled through a setup table;
+-- start them per buffer instead, and skip large files so they stay fast.
+vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('StartTreesitter', { clear = true }),
   callback = function(args)
     local filepath = vim.api.nvim_buf_get_name(args.buf)
-    if filepath == '' then
+    if vim.b[args.buf].large_file or (filepath ~= '' and (large_file.is_large_file(filepath))) then
       return
     end
 
-    local is_large, size = large_file.is_large_file(filepath)
-    if is_large then
-      -- Disable vim's built-in syntax highlighting
-      vim.bo[args.buf].syntax = 'off'
-      vim.bo[args.buf].swapfile = false
-      vim.bo[args.buf].undofile = false
+    local lang = vim.treesitter.language.get_lang(args.match)
+    if not lang or not pcall(vim.treesitter.start, args.buf, lang) then
+      return
+    end
 
-      -- Disable treesitter
-      vim.schedule(function()
-        pcall(vim.cmd, 'TSBufDisable highlight')
-        pcall(vim.cmd, 'TSBufDisable indent')
-        pcall(vim.cmd, 'TSBufDisable incremental_selection')
-      end)
+    if args.match == 'ruby' then
+      -- Ruby relies on vim's regex highlighting for indent rules
+      vim.bo[args.buf].syntax = 'ruby'
+    else
+      vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end
   end,
 })
+
+-- Textobject motions (the select/swap/lsp_interop modules are not used)
+local textobjects_ok = pcall(function()
+  require('nvim-treesitter-textobjects').setup {
+    move = { set_jumps = true }, -- whether to set jumps in the jumplist
+  }
+end)
+
+if textobjects_ok then
+  local move = require('nvim-treesitter-textobjects.move')
+
+  local motions = {
+    { goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer', [']b'] = '@block.outer', [']p'] = '@parameter.outer' } },
+    { goto_next_end = { [']F'] = '@function.outer', [']C'] = '@class.outer', [']B'] = '@block.outer', [']P'] = '@parameter.outer' } },
+    { goto_previous_start = { ['[f'] = '@function.outer', ['[c'] = '@class.outer', ['[b'] = '@block.outer', ['[p'] = '@parameter.outer' } },
+    { goto_previous_end = { ['[F'] = '@function.outer', ['[C'] = '@class.outer', ['[B'] = '@block.outer', ['[P'] = '@parameter.outer' } },
+  }
+
+  for _, group in ipairs(motions) do
+    for action, keymaps in pairs(group) do
+      for lhs, query in pairs(keymaps) do
+        vim.keymap.set({ 'n', 'x', 'o' }, lhs, function()
+          move[action](query, 'textobjects')
+        end, { desc = action .. ' ' .. query })
+      end
+    end
+  end
+end

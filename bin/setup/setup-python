@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs Python3, the python/pip symlinks and sqlfluff.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_python() {
+	brew_install python3
+
+	# Create symlinks for python and pip if they don't exist
+	if [ ! -e "/opt/homebrew/bin/python" ] && [ -e "/opt/homebrew/bin/python3" ]; then
+		echo 'Creating python -> python3 symlink'
+		ln -s /opt/homebrew/bin/python3 /opt/homebrew/bin/python
+	fi
+
+	if [ ! -e "/opt/homebrew/bin/pip" ] && [ -e "/opt/homebrew/bin/pip3" ]; then
+		echo 'Creating pip -> pip3 symlink'
+		ln -s /opt/homebrew/bin/pip3 /opt/homebrew/bin/pip
+	fi
+}
+
+install_sqlfluff_packages() {
+	if [ -n "$(command -v sqlfluff)" ]; then
+		echo 'sqlfluff already installed'
+	else
+		echo 'Installing sqlfluff'
+		pip3 install sqlfluff
+	fi
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_python
+	install_sqlfluff_packages
+}
+
+main "$@"
+exit 0

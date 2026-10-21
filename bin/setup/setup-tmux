@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs tmux and the Tmux Plugin Manager.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_tmux() {
+	brew_install tmux
+
+	if [ -d "$HOME/.tmux/plugins/tpm" ]; then
+		echo 'Tmux Plugin Manager already installed'
+	else
+		echo 'Installing Tmux Plugin Manager'
+		git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+	fi
+}
+
+link_tmux_config() {
+	link ~/.config/configs/tmux/.tmux.conf ~/.tmux.conf
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_brew
+	install_tmux
+	link_tmux_config
+}
+
+main "$@"
+exit 0

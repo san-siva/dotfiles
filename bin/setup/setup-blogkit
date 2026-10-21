@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs the blogkit-md CLI used to preview markdown as blog posts.
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_blogkit() {
+	# The blogkit-md.nvim plugin is managed by lazy.nvim (see nvim/lua/plugins/init.lua)
+	npm_install @san-siva/blogkit-md-cli
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_nvm
+	install_blogkit
+}
+
+main "$@"
+exit 0

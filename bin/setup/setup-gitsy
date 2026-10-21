@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Author: Santhosh Siva
+# Date Created: 21-10-2026
+
+# Description:
+# Installs gitsy, the Git workflow utilities (g-co, g-wa, ...).
+
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.sh"
+
+install_gitsy() {
+	npm_install @san-siva/gitsy
+}
+
+main() {
+	echo "Sankit"
+	echo ""
+
+	load_nvm
+	install_gitsy
+}
+
+main "$@"
+exit 0
