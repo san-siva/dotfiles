@@ -6,6 +6,7 @@ import { BlogPost } from '@san-siva/blogkit-md';
 const DotfilesDocumentation: NextPage = () => {
 	return (
 		<BlogPost
+			increasedWidthMode
 			filePath={path.join(process.cwd(), '../README.md')}
 			jsonLd={{
 				'@context': 'https://schema.org',
