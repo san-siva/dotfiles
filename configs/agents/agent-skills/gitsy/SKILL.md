@@ -10,21 +10,22 @@ Gitsy is an installed bash CLI toolkit for Git workflows. Use these commands via
 
 ## Commands
 
-| Command  | Purpose                                      | Key flags / args                          |
-| -------- | -------------------------------------------- | ----------------------------------------- |
-| `g-s`    | Show git status                              |                                           |
-| `g-cb`   | Print current branch                         |                                           |
-| `g-co`   | Checkout a branch                            | `-t <branch>`, `--stash-changes`          |
-| `g-pull` | Pull from remote                             |                                           |
-| `g-push` | Push to remote                               | `--force`                                 |
+| Command  | Purpose                                      | Key flags / args                                           |
+| -------- | -------------------------------------------- | ---------------------------------------------------------- |
+| `g-s`    | Show git status                              |                                                            |
+| `g-cb`   | Print current branch                         |                                                            |
+| `g-co`   | Checkout a branch                            | `-t <branch>`, `--stash-changes`                           |
+| `g-pull` | Pull from remote                             |                                                            |
+| `g-push` | Push to remote                               | `--force`                                                  |
 | `g-wa`   | Add a worktree (auto-restructures repo)      | `-t <branch>`, `--worktree-name <name>`, `--stash-changes` |
-| `g-wl`   | List all worktrees                           |                                           |
-| `g-wr`   | Remove a worktree                            | `-t <branch>`                             |
-| `g-db`   | Delete a branch locally and remotely         | `-t <branch>`                             |
-| `g-dlc`  | Discard last commit                          |                                           |
-| `g-rmf`  | Stash working directory changes              |                                           |
-| `g-rto`  | Reset branch to match remote                 |                                           |
-| `g-diff` | Compare two branches                         | `-s <source>`, `-t <target>`              |
+| `g-wl`   | List all worktrees                           |                                                            |
+| `g-wr`   | Remove a worktree                            | `-t <branch>`, `-w <name>`, `-a, --all`                    |
+| `g-wh`   | Detect and repair a bricked worktree / prune | `-t <branch>`, `-w <name>`, `-a, --all`, `--dry-run`       |
+| `g-db`   | Delete a branch locally and remotely         | `-t <branch>`                                              |
+| `g-dlc`  | Discard last commit                          |                                                            |
+| `g-rmf`  | Stash working directory changes              |                                                            |
+| `g-rto`  | Reset branch to match remote                 |                                                            |
+| `g-diff` | Compare two branches                         | `-s <source>`, `-t <target>`                               |
 
 All commands support `--help` for details.
 
