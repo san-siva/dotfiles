@@ -1,4 +1,6 @@
 {
-  "list.move_down": ["j"],
-  "list.move_up": ["k"]
+	"navigation.up": ["up", "ctrl+k"],
+	"navigation.down": ["down", "ctrl+j"],
+	"prompt.insert_newline": ["shift+enter", "alt+enter"],
+	"edit.open_editor": ["ctrl+e"]
 }
