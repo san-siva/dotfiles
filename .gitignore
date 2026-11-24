@@ -36,6 +36,7 @@ doctl/
 # Sensitive config files (contain personal email/keys)
 configs/git/.gitconfig
 configs/git/.gitconfig__wrk
+configs/git/.gitconfig__bitbucket_wrk
 configs/ssh/ssh_config
 configs/agents/agent-skills/
 

@@ -123,7 +123,7 @@ Each setup script links its own config from `~/.config/configs/` using `ln -sfn`
 | `setup-neovim`      | `configs/vim/.vimrc`                                              | `~/.vimrc`                                   |
 | `setup-node`        | `configs/node/.eslintrc.json`                                     | `~/.eslintrc.json`                           |
 | `setup-node`        | `configs/node/.prettierrc.json`                                   | `~/.prettierrc.json`                         |
-| `setup-git`         | `configs/git/.gitconfig`, `.gitconfig__wrk`, `.gitignore__global` | `~/`                                         |
+| `setup-git`         | `configs/git/.gitconfig`, `.gitconfig__wrk`, `.gitconfig__bitbucket_wrk`, `.gitignore__global` | `~/`                                         |
 | `setup-ssh`         | `configs/ssh/ssh_config`                                          | `~/.ssh/config`                              |
 | `setup-java`        | `configs/java/eclipse-java-google-style.xml`, `lombok.jar`        | `~/.local/share/eclipse/`                    |
 | `setup-claude`      | `configs/agents/agent-skills`                                     | `~/.claude/skills`                           |
